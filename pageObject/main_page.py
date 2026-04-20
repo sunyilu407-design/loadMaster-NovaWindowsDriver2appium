@@ -5,6 +5,9 @@
 import time
 import allure
 
+from selenium.webdriver.common.by import By
+from appium.webdriver.common.appiumby import AppiumBy
+
 from .base_page import BasePage
 from utils.logger import Logger
 import logging
@@ -581,33 +584,73 @@ class MainPage(BasePage):
             title = self.driver.title
             self.log.info(f"当前窗口标题: {title}")
 
-            # 尝试不同的定位策略来查找系统管理相关元素
-            strategies = [
-                ("//*[@Name='系统管理']", "Name='系统管理'"),
-                ("//MenuItem[@Name='系统管理']", "MenuItem + Name='系统管理'"),
-                ("//*[@Name='系统管理'][@ControlType='MenuItem']", "Name + ControlType=MenuItem"),
-                ("//*[@Name='系统']", "Name='系统' (部分匹配)"),
-                ("//MenuItem", "所有MenuItem"),
-                ("//*[@ControlType='MenuItem']", "所有ControlType=MenuItem"),
+            # 1) 先用 W3C/Appium 原生定位策略（NovaWindows 推荐路径，
+            #    XPath 可能在属性名大小写/命名空间上跟 WinAppDriver 不一致）
+            native_strategies = [
+                (AppiumBy.NAME, '系统管理', "AppiumBy.NAME='系统管理'"),
+                (AppiumBy.NAME, '用户管理', "AppiumBy.NAME='用户管理'"),
+                (AppiumBy.ACCESSIBILITY_ID, 'menuStrip1', "AccessibilityId='menuStrip1'"),
+                (AppiumBy.CLASS_NAME, 'MenuStrip', "ClassName='MenuStrip'"),
+                (AppiumBy.CLASS_NAME, 'ToolStripMenuItem', "ClassName='ToolStripMenuItem'"),
+                (AppiumBy.CLASS_NAME, 'MenuItem', "ClassName='MenuItem'"),
+            ]
+            for by, val, desc in native_strategies:
+                try:
+                    elements = self.driver.find_elements(by, val)
+                    if elements:
+                        self.log.info(f"✅ [{desc}] 找到 {len(elements)} 个元素")
+                        for elem in elements[:5]:
+                            try:
+                                name = elem.get_attribute("Name") or "无"
+                                ct = elem.get_attribute("ControlType") or elem.get_attribute("LocalizedControlType") or "无"
+                                aid = elem.get_attribute("AutomationId") or "无"
+                                cls = elem.get_attribute("ClassName") or "无"
+                                self.log.info(f"   - Name={name}, ControlType={ct}, ClassName={cls}, AutomationId={aid}")
+                            except Exception as e:
+                                self.log.debug(f"     get_attribute 失败: {e}")
+                    else:
+                        self.log.info(f"❌ [{desc}] 未找到元素")
+                except Exception as e:
+                    self.log.info(f"❌ [{desc}] 查询出错: {e}")
+
+            # 2) XPath 多种属性写法（NovaWindows 的属性名可能是 Name/name 不同）
+            xpath_strategies = [
+                ("//*[@Name='系统管理']", "XPath @Name='系统管理'"),
+                ("//*[@name='系统管理']", "XPath @name='系统管理' (小写)"),
+                ("//MenuItem[@Name='系统管理']", "MenuItem + Name"),
+                ("//*[contains(@Name,'系统')]", "XPath contains(@Name,'系统')"),
+                ("//MenuItem", "所有 MenuItem 标签"),
+                ("//MenuBar", "所有 MenuBar 标签"),
+                ("//*[@LocalizedControlType='菜单项']", "XPath @LocalizedControlType='菜单项'"),
+                ("//*[@LocalizedControlType='menu item']", "XPath @LocalizedControlType='menu item'"),
+                ("//Window//*", "Window 下所有元素 (前几个)"),
             ]
 
-            for xpath, desc in strategies:
+            for xpath, desc in xpath_strategies:
                 try:
                     elements = self.driver.find_elements(By.XPATH, xpath)
                     if elements:
                         self.log.info(f"✅ [{desc}] 找到 {len(elements)} 个元素")
-                        for elem in elements[:5]:  # 只显示前5个
+                        for elem in elements[:5]:
                             try:
                                 name = elem.get_attribute("Name") or "无"
-                                ct = elem.get_attribute("ControlType") or "无"
-                                aid = elem.get_attribute("AutomationId") or "无"
-                                self.log.info(f"   - Name={name}, ControlType={ct}, AutomationId={aid}")
-                            except:
+                                ct = elem.get_attribute("LocalizedControlType") or elem.get_attribute("ControlType") or "无"
+                                cls = elem.get_attribute("ClassName") or "无"
+                                self.log.info(f"   - Name={name}, ControlType={ct}, ClassName={cls}")
+                            except Exception:
                                 pass
                     else:
-                        self.log.debug(f"❌ [{desc}] 未找到元素")
+                        self.log.info(f"❌ [{desc}] 未找到元素")
                 except Exception as e:
-                    self.log.debug(f"❌ [{desc}] 查询出错: {e}")
+                    self.log.info(f"❌ [{desc}] 查询出错: {e}")
+
+            # 3) Dump page_source 的前 4000 字符，看 NovaWindows 给出的 XML 结构
+            try:
+                ps = self.driver.page_source or ''
+                self.log.info(f"=== page_source 长度 {len(ps)}，前 4000 字符 ===")
+                self.log.info(ps[:4000])
+            except Exception as e:
+                self.log.warning(f"获取 page_source 失败: {e}")
 
             # 尝试查找主窗口的容器元素
             self.log.info("尝试查找主窗口容器...")
