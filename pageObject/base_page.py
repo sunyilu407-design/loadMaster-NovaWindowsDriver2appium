@@ -456,51 +456,69 @@ class BasePage:
 
     def switch_to_window(self, title=None, automation_id=None):
         """
-        切换到指定窗口
+        切换到指定窗口（NovaWindows Driver 兼容版）
+        NovaWindows 的 switch_to.window() 不会重绑定 UIA 搜索根，
+        必须通过 reattach_to_window 重建会话才能在新窗口中定位元素。
+
         :param title: 窗口标题（支持部分匹配）
         :param automation_id: 窗口的AutomationId（用于WinAppDriver对话框）
         :return: 是否成功
         """
+        from utils.driver_factory import DriverFactory
+
         try:
             window_handles = self.driver.window_handles
             if not window_handles:
                 self.log.warning("当前没有可用的窗口")
                 return False
 
+            matched_handle = None
+
             for handle in window_handles:
                 try:
                     self.driver.switch_to.window(handle)
+                    current_title = self.driver.title or ''
 
                     # 方案1：通过 title 匹配
-                    if title and title in self.driver.title:
-                        self.log.info(f"✅ 切换到窗口成功（通过title）: {title}")
-                        return True
+                    if title and title in current_title:
+                        self.log.info(f"找到目标窗口: handle={handle}, title='{current_title}'")
+                        matched_handle = handle
+                        break
 
-                    # 方案2：通过 automation_id 匹配（WinAppDriver对话框专用）
+                    # 方案2：通过 automation_id 匹配
                     if automation_id:
                         try:
                             root_element = self.locate_element(timeout=1, automation_id=automation_id, type="Window")
                             if root_element:
-                                self.log.info(f"✅ 切换到窗口成功（通过automation_id）: {automation_id}")
-                                return True
+                                self.log.info(f"找到目标窗口: handle={handle}, automation_id='{automation_id}'")
+                                matched_handle = handle
+                                break
                         except Exception:
                             pass
                 except Exception as e:
-                    # 跳过已关闭的窗口
                     self.log.debug(f"跳过已关闭的窗口 {handle}: {e}")
                     continue
 
-            # 尝试切换到第一个可用窗口作为后备
+            if not matched_handle:
+                self.log.warning(f"❌ 未找到目标窗口: title='{title}', automation_id='{automation_id}'")
+                return False
+
+            # NovaWindows Driver: 必须 reattach 才能把 UIA 搜索根切到新窗口
+            ok = DriverFactory.reattach_to_window(self.driver, matched_handle)
+            if not ok:
+                self.log.warning(f"❌ reattach 到窗口失败: handle={matched_handle}")
+                return False
+
+            self.clear_cache()
+            # 清除主窗口绑定标志，后续回到主窗口时需要重新绑定
             try:
-                if window_handles:
-                    self.driver.switch_to.window(window_handles[0])
-                    self.log.info(f"✅ 已切换到第一个可用窗口: {self.driver.title}")
-                    return True
+                self.driver._bound_to_main_window = False
             except Exception:
                 pass
 
-            self.log.warning(f"❌ 未找到目标窗口: title='{title}', automation_id='{automation_id}'")
-            return False
+            self.log.info(f"✅ 切换到窗口成功（reattach）: title='{title}', handle={matched_handle}")
+            return True
+
         except Exception as e:
             self.log.error(f"❌ 切换窗口失败: {e}")
             return False
