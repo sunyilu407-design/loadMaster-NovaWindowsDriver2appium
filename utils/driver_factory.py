@@ -319,6 +319,9 @@ class DriverFactory:
             options.set_capability('automationName', 'NovaWindows')
             options.set_capability('noReset', True)  # 避免重复启动
             options.set_capability('fullReset', False)
+            # 关键：会话结束时不要关闭应用，这样登录后我们才能重新用
+            # appTopLevelWindow 绑定到主窗而不影响应用
+            options.set_capability('shouldCloseApp', False)
 
         return options
 
@@ -425,6 +428,131 @@ class DriverFactory:
         """获取Windows应用Driver"""
         return cls.get_driver('windows')
     
+    @classmethod
+    def find_app_window_handle(
+        cls,
+        driver: RemoteWebDriver,
+        title_contains: str,
+        title_excludes: Optional[list] = None,
+    ) -> Optional[str]:
+        """
+        在当前会话的 window_handles 里按标题查找目标窗口句柄（十六进制字符串形式，
+        NovaWindows 的 window_handles 会列出桌面所有顶层窗口，所以需要标题过滤）。
+
+        Args:
+            driver: WebDriver实例
+            title_contains: 标题必须包含的子串
+            title_excludes: 标题必须不包含的子串列表
+
+        Returns:
+            匹配窗口的句柄（如 '0x000f1234'），找不到返回 None
+        """
+        title_excludes = title_excludes or []
+        try:
+            handles = driver.window_handles
+        except Exception as e:
+            logger.warning(f"读取 window_handles 失败: {e}")
+            return None
+
+        for handle in handles:
+            try:
+                driver.switch_to.window(handle)
+                t = driver.title or ''
+            except Exception:
+                continue
+            if title_contains in t and not any(ex in t for ex in title_excludes):
+                logger.info(f"找到目标窗口: handle={handle}, title='{t}'")
+                return handle
+        return None
+
+    @classmethod
+    def reattach_to_window(
+        cls,
+        driver: RemoteWebDriver,
+        window_handle: str,
+        platform: str = 'windows',
+    ) -> bool:
+        """
+        关键修复：NovaWindows 的 driver.switch_to.window() 不会把会话的 UIA 搜索根
+        切到新窗口。多窗口应用（登录 -> 主界面）必须用 appTopLevelWindow 重建会话。
+
+        此方法会：
+        1) 结束当前会话（不关闭应用，因为我们设了 shouldCloseApp=False）
+        2) 用同一个 driver 对象发起一个新会话，capabilities 里带上 appTopLevelWindow
+        3) 就地更新 driver.session_id / driver.caps，保持调用方引用不变
+
+        Args:
+            driver: 需要重绑定的 WebDriver 实例
+            window_handle: 目标窗口的 HWND（十六进制字符串，如 '0x000f1234'）
+            platform: 平台（目前只用于 Windows）
+
+        Returns:
+            True 表示重绑定成功
+        """
+        from selenium.webdriver.remote.command import Command
+
+        old_session = driver.session_id
+        logger.info(
+            f"开始重绑定 NovaWindows 会话到 appTopLevelWindow={window_handle} "
+            f"(旧 session_id={old_session})"
+        )
+
+        # 1) 结束旧会话（不 quit，以便继续复用 driver 对象）
+        try:
+            driver.execute(Command.DELETE_SESSION)
+        except Exception as e:
+            logger.warning(f"结束旧会话失败（忽略）: {e}")
+        driver.session_id = None
+
+        # 2) 构造新会话的 capabilities
+        caps = {
+            'platformName': 'Windows',
+            'appium:automationName': 'NovaWindows',
+            'appium:appTopLevelWindow': window_handle,
+            'appium:shouldCloseApp': False,
+            'appium:noReset': True,
+        }
+        parameters = {
+            'capabilities': {
+                'firstMatch': [{}],
+                'alwaysMatch': caps,
+            },
+            # 旧 JSONWire 兼容（部分 Appium 版本会读取）
+            'desiredCapabilities': {k.replace('appium:', ''): v for k, v in caps.items()},
+        }
+
+        # 3) 发起新会话并写回 driver
+        try:
+            response = driver.execute(Command.NEW_SESSION, parameters)
+        except Exception as e:
+            logger.error(f"重绑定新会话失败: {e}")
+            return False
+
+        value = response.get('value') if isinstance(response, dict) else None
+        new_session_id = None
+        new_caps = {}
+        if isinstance(value, dict):
+            new_session_id = value.get('sessionId') or response.get('sessionId')
+            new_caps = value.get('capabilities') or value
+        if not new_session_id and isinstance(response, dict):
+            new_session_id = response.get('sessionId')
+            new_caps = response.get('value', {}) or {}
+
+        if not new_session_id:
+            logger.error(f"无法从响应中解析 sessionId: {response}")
+            return False
+
+        driver.session_id = new_session_id
+        try:
+            driver.caps = new_caps
+        except Exception:
+            pass
+
+        # 会话变了，必须清空元素缓存（旧 element_id 都失效）
+        cls._element_cache.clear()
+        logger.info(f"✅ 会话已重绑定，新 session_id={new_session_id}")
+        return True
+
     @classmethod
     def attach_to_existing_app(cls, window_handle: str) -> Optional[RemoteWebDriver]:
         """

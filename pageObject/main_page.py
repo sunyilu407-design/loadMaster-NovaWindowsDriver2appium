@@ -516,39 +516,55 @@ class MainPage(BasePage):
         """
         确保当前在主窗口中
         如果当前在登录窗口或其他窗口，切换到主窗口
+
+        关键修复：NovaWindows Driver 的 switch_to.window() 并不会把会话的 UIA
+        搜索根切到新窗口（相关 issue: AutomateThePlanet/appium-novawindows-driver#67）。
+        对于多窗口应用（登录窗 -> 主窗），必须用 appTopLevelWindow 重建会话才能
+        让后续的 XPath / name 查询真正命中主窗的元素树。
         """
         try:
-            current_title = self.driver.title
-
-            # 如果已经是主窗口（标题包含"装车管理系统"但不包含"欢迎使用"），直接返回
-            if '装车管理系统' in current_title and '欢迎使用' not in current_title:
+            # 已经重绑定过主窗就不再折腾
+            if getattr(self.driver, '_bound_to_main_window', False):
                 return True
 
-            # 如果是登录窗口或其他窗口，尝试切换到主窗口
-            self.log.info(f"当前窗口: {current_title}，尝试切换到主窗口...")
-
             try:
-                window_handles = self.driver.window_handles
-                for handle in window_handles:
-                    try:
-                        self.driver.switch_to.window(handle)
-                        title = self.driver.title
-                        # 主窗口：包含"装车管理系统"但不包含"欢迎使用"或"登录"
-                        if '装车管理系统' in title and '欢迎使用' not in title and '登录' not in title:
-                            self.log.info(f"✅ 成功切换到主窗口，窗口标题: {title}")
-                            # 切换成功后清空缓存，因为窗口变了
-                            self.clear_cache()
-                            return True
-                    except:
-                        continue
-            except Exception as e:
-                self.log.warning(f"切换到主窗口时出错: {e}")
+                current_title = self.driver.title or ''
+            except Exception:
+                current_title = ''
 
-            self.log.warning("未能切换到主窗口，继续在当前窗口操作...")
-            return False
+            # 如果已经在主窗口（标题包含"装车管理系统"但不包含"欢迎使用"），
+            # 仍然需要做一次重绑定，因为 switch_to.window 给出的 title 不代表
+            # 会话 UIA 根已经切换。为了避免重复执行，这里用标志位 _bound_to_main_window 兜底。
+            self.log.info(f"当前窗口: {current_title}，准备重绑定到主窗口 HWND...")
+
+            # 找主窗的 HWND
+            from utils.driver_factory import DriverFactory
+            main_handle = DriverFactory.find_app_window_handle(
+                self.driver,
+                title_contains='装车管理系统',
+                title_excludes=['欢迎使用', '登录'],
+            )
+
+            if not main_handle:
+                self.log.warning("未找到主窗口句柄，无法重绑定会话")
+                return False
+
+            ok = DriverFactory.reattach_to_window(self.driver, main_handle)
+            if not ok:
+                self.log.warning("重绑定主窗口会话失败")
+                return False
+
+            # 本地缓存也清一下
+            self.clear_cache()
+            try:
+                self.driver._bound_to_main_window = True
+            except Exception:
+                pass
+            self.log.info("✅ 已重绑定到主窗口，会话 UIA 搜索根已更新")
+            return True
 
         except Exception as e:
-            self.log.warning(f"检查窗口时出错: {e}")
+            self.log.warning(f"切换到主窗口时出错: {e}")
             return False
 
     def diagnose_main_window_elements(self):
