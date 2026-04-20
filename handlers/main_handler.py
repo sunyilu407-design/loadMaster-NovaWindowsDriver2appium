@@ -9,7 +9,6 @@
 """
 
 import logging
-import time
 import allure
 from handlers.base_handler import BaseHandler
 from pageObject.main_page import MainPage
@@ -77,7 +76,6 @@ class MainHandler(BaseHandler):
         导航到用户信息管理 - 业务逻辑
         添加等待和验证逻辑，确保子菜单能够正确展开和点击
         """
-        import time
         with allure.step("导航到用户信息管理页面"):
             self.log.info("执行导航到用户信息管理的业务逻辑")
 
@@ -88,17 +86,7 @@ class MainHandler(BaseHandler):
                 if not self.is_main_page_displayed():
                     raise Exception("当前不在主页面，无法导航到用户信息管理")
 
-            # 点击用户管理主菜单并验证
-            with allure.step("点击用户管理主菜单"):
-                self.log.info("点击用户管理主菜单...")
-                self.main_page.click_user_management_parent_menu()
-
-            # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-            with allure.step("等待子菜单展开"):
-                self.log.info("等待子菜单展开...")
-                time.sleep(0.5)  # 等待1秒让子菜单完全展开
-
-            # 点击用户信息管理子菜单并验证
+            # 点击用户信息管理子菜单（_click_menu_element内部自动点击父菜单）
             with allure.step("点击用户信息管理子菜单"):
                 self.log.info("点击用户信息管理子菜单...")
                 if not self.main_page.click_user_management_child_menu():
@@ -118,13 +106,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到密码修改")
         
-        # 点击用户管理主菜单
-        self.main_page.click_user_management_parent_menu()
-
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击密码修改菜单
         self.main_page.click_passWord_change_menu()
         
@@ -139,13 +120,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到用户名修改")
-        
-        # 点击用户管理主菜单
-        self.main_page.click_user_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击用户名修改菜单
         self.main_page.click_userName_change_menu()
@@ -162,13 +136,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到用户登录")
         
-        # 点击用户管理主菜单
-        self.main_page.click_user_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击用户登录菜单
         self.main_page.click_user_login_menu()
         
@@ -183,13 +150,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到退出登录")
-        
-        # 点击用户管理主菜单
-        self.main_page.click_user_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击退出登录菜单
         self.main_page.click_user_logout_menu()
@@ -222,35 +182,8 @@ class MainHandler(BaseHandler):
                 if not self.main_page.is_main_page_present(timeout=30):
                     self.log.warning("主界面加载超时，但继续尝试...")
 
-            # 诊断：先检查主窗口中有哪些元素
-            with allure.step("诊断主窗口元素"):
-                self.log.info("开始诊断主窗口元素...")
-                self.main_page.diagnose_main_window_elements()
-
-            # 点击系统管理主菜单，带重试
-            with allure.step("点击系统管理主菜单"):
-                max_retries = 3
-                for retry in range(max_retries):
-                    self.log.info(f"尝试点击系统管理主菜单 (重试 {retry + 1}/{max_retries})")
-                    try:
-                        self.main_page.click_system_management_parent_menu()
-                        time.sleep(0.5)  # 等待菜单展开
-                        break
-                    except Exception as e:
-                        self.log.warning(f"点击系统管理主菜单失败: {e}")
-                        if retry < max_retries - 1:
-                            self.log.info("清空缓存并重试...")
-                            self.main_page.clear_cache()
-                            time.sleep(1)
-                        else:
-                            raise Exception("点击系统管理主菜单失败，已达最大重试次数")
-
-            # 等待子菜单展开
-            with allure.step("等待子菜单展开"):
-                self.log.info("等待子菜单展开...")
-                time.sleep(0.5)
-
-            # 点击客户信息管理菜单
+            # 直接点击客户信息管理菜单
+            # _click_menu_element 内部会自动先点击父菜单（系统配置），无需在此重复点击
             with allure.step("点击客户信息管理菜单"):
                 self.main_page.click_customer_menu()
 
@@ -266,13 +199,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到串口信息管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击串口信息管理菜单
         self.main_page.click_serial_port_menu()
         
@@ -288,13 +215,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到货位信息管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击货位信息管理菜单
         self.main_page.click_station_menu()
         
@@ -310,13 +231,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到油品信息管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击油品信息管理菜单
         self.main_page.click_oil_menu()
         
@@ -332,13 +247,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到配置设定")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击配置设定菜单
         self.main_page.click_configuration_settings_menu()
         
@@ -354,13 +263,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发油密度")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击发油密度菜单
         self.main_page.click_oil_density_menu()
         
@@ -376,13 +279,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到货位油罐配置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击货位油罐配置菜单
         self.main_page.click_station_tank_menu()
         
@@ -398,13 +295,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发油规则设置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击发油规则设置菜单
         self.main_page.click_oil_distribution_rules_menu()
         
@@ -420,13 +311,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到系统单位小数设置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击系统单位小数设置菜单
         self.main_page.click_system_decimal_settings_menu()
         
@@ -441,20 +326,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到边缘盒子配置")
-        
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击边缘盒子配置子菜单
         self.main_page.click_marginal_box_menu()
@@ -471,20 +342,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到作业位配置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击作业位配置子菜单
         self.main_page.click_job_position_menu()
         
@@ -499,20 +356,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到摄像头配置")
-        
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击摄像头配置子菜单
         self.main_page.click_camera_menu()
@@ -529,20 +372,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到云服务器配置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击云服务器配置子菜单
         self.main_page.click_claude_server_menu()
         
@@ -557,20 +386,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到自研算法配置")
-        
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击自研算法配置子菜单
         self.main_page.click_self_developed_algorithm_parameter_menu()
@@ -587,20 +402,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到自研算法任务启停")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击AI配置菜单
-        self.main_page.click_AI_configuration_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击自研算法任务启停子菜单
         self.main_page.click_self_developed_AI_task_start_and_stop_menu()
         
@@ -616,13 +417,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到货位提油限制")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击货位提油限制菜单
         self.main_page.click_station_oil_extraction_limit_menu()
         
@@ -638,13 +433,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到车辆管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击车辆管理菜单
         self.main_page.click_car_menu()
         
@@ -660,13 +449,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到文档管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击文档管理菜单
         self.main_page.click_document_menu()
         
@@ -682,13 +465,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到评分管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击评分管理菜单
         self.main_page.click_score_menu()
         
@@ -704,13 +481,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到语音播报设置")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击语音播报设置菜单
         self.main_page.click_voice_menu()
         
@@ -726,13 +497,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到设备信息管理")
         
-        # 点击系统管理主菜单
-        self.main_page.click_system_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击设备信息管理菜单
         self.main_page.click_device_menu()
         
@@ -750,13 +515,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写标准密度")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写标准密度菜单
         self.main_page.click_read_write_standard_density_menu()
         
@@ -772,13 +531,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写乙醇比")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写乙醇比菜单
         self.main_page.click_read_write_ethanol_ratio_menu()
         
@@ -794,13 +547,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写流速参数")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写流速参数菜单
         self.main_page.click_read_write_flow_rate_menu()
         
@@ -816,13 +563,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写累积量")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写累积量菜单
         self.main_page.click_read_write_cumulative_amount_menu()
         
@@ -838,13 +579,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写脉冲参数")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写脉冲参数菜单
         self.main_page.click_read_write_pulse_parameters_menu()
         
@@ -860,13 +595,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写温变参数")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写温变参数菜单
         self.main_page.click_read_write_temperature_change_menu()
         
@@ -882,13 +611,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写密码")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写密码菜单
         self.main_page.click_read_write_passWrod_menu()
         
@@ -904,13 +627,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写历史记录")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写历史记录菜单
         self.main_page.click_read_history_menu()
         
@@ -926,13 +643,7 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写平均温度修正量")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
+
         # 点击读写平均温度修正量菜单
         self.main_page.click_read_write_average_temperature_menu()
         
@@ -948,20 +659,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写添加剂配比")
         
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击添加剂菜单
-        self.main_page.click_additive_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击读写添加剂配比子菜单
         self.main_page.click_read_write_additive_ratio_menu()
         
@@ -976,20 +673,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到读写添加剂计密")
-        
-        # 点击装车仪主菜单
-        self.main_page.click_loading_instrument_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
-        # 点击添加剂菜单
-        self.main_page.click_additive_menu()
-        
-        # 关键改进：等待子菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击读写添加剂计密子菜单
         self.main_page.click_read_write_additive_meter_menu()
@@ -1007,13 +690,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发放记录报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击发放记录报表菜单
         self.main_page.click_distribution_record_report_menu()
         
@@ -1028,13 +704,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到付油台提油统计表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击付油台提油统计表菜单
         self.main_page.click_oil_dispensing_platform_statistics_report_menu()
@@ -1051,13 +720,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到油库流量计发油记录")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击油库流量计发油记录菜单
         self.main_page.click_oil_depot_flowmeter_oil_dispensing_report_menu()
         
@@ -1072,13 +734,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到货位报警记录")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击货位报警记录菜单
         self.main_page.click_station_alarm_record_report_menu()
@@ -1095,13 +750,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到流量计汇总报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击流量计汇总报表菜单
         self.main_page.click_flowmeter_summary_report_menu()
         
@@ -1116,13 +764,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到物流密度确认下发日志")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击物流密度确认下发日志菜单
         self.main_page.click_logistics_density_confirmation_issued_log_menu()
@@ -1139,13 +780,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发油作业报告单")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击发油作业报告单菜单
         self.main_page.click_oil_application_work_report_menu()
         
@@ -1160,13 +794,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到数据上传液位深化平台报表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击数据上传液位深化平台报表菜单
         self.main_page.click_data_upload_liquid_level_deepen_platform_report_menu()
@@ -1183,13 +810,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到温度密度记录查询报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击温度密度记录查询报表菜单
         self.main_page.click_temperature_density_record_inquiry_report_menu()
         
@@ -1204,13 +824,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到联机发油报表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击联机发油报表菜单
         self.main_page.click_online_oil_delivery_report_menu()
@@ -1227,13 +840,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到脱机发油报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击脱机发油报表菜单
         self.main_page.click_offline_oil_delivery_report_menu()
         
@@ -1248,13 +854,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到打卡记录查询报表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击打卡记录查询报表菜单
         self.main_page.click_check_in_record_report_menu()
@@ -1271,13 +870,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到流量计班结损溢报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击流量计班结损溢报表菜单
         self.main_page.click_flow_meter_loss_and_gain_report_menu()
         
@@ -1292,13 +884,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到操作日志查询")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击操作日志查询菜单
         self.main_page.click_operation_log_report_menu()
@@ -1315,13 +900,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到出库日结表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击出库日结表菜单
         self.main_page.click_outbound_daily_summary_report_menu()
         
@@ -1336,13 +914,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发油数据统计")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击发油数据统计菜单
         self.main_page.click_oil_dispensing_data_statistics_report_menu()
@@ -1359,13 +930,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到过账中间表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击过账中间表菜单
         self.main_page.click_posting_intermediate_report_menu()
         
@@ -1380,13 +944,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到物流密度确认下发")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击物流密度确认下发菜单
         self.main_page.click_logistics_density_confirmation_issued_report_menu()
@@ -1403,13 +960,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到发油密度查询")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击发油密度查询菜单
         self.main_page.click_oil_dispensing_density_inquiry_report_menu()
         
@@ -1424,13 +974,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到微机发油报表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击微机发油报表菜单
         self.main_page.click_microcomputer_oil_dispensing_report_menu()
@@ -1447,13 +990,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到鹤位统计报表")
         
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击鹤位统计报表菜单
         self.main_page.click_crane_position_statistics_report_menu()
         
@@ -1468,13 +1004,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到告警记录报表")
-        
-        # 点击报表管理主菜单
-        self.main_page.click_report_management_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击告警记录报表菜单
         self.main_page.click_alarm_record_report_menu()
@@ -1493,13 +1022,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到工作卡管理")
         
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击工作卡管理菜单
         self.main_page.click_working_card_management_menu()
         
@@ -1514,13 +1036,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到钥匙卡管理")
-        
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击钥匙卡管理菜单
         self.main_page.click_key_card_management_menu()
@@ -1537,13 +1052,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到合资卡管理")
         
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击合资卡管理菜单
         self.main_page.click_joint_venture_card_management_menu()
         
@@ -1558,13 +1066,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到代管卡管理")
-        
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击代管卡管理菜单
         self.main_page.click_managed_card_management_menu()
@@ -1581,13 +1082,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到车辆绑卡管理")
         
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击车辆绑卡管理菜单
         self.main_page.click_vehicle_card_binding_management_menu()
         
@@ -1602,13 +1096,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到备份数据库")
-        
-        # 点击系统工具主菜单
-        self.main_page.click_system_tools_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击备份数据库菜单
         self.main_page.click_backup_database_menu()
@@ -1626,13 +1113,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到注册")
         
-        # 点击帮助主菜单
-        self.main_page.click_help_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击注册菜单
         self.main_page.click_register_menu()
         
@@ -1648,13 +1128,6 @@ class MainHandler(BaseHandler):
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到版本")
         
-        # 点击帮助主菜单
-        self.main_page.click_help_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
-        
         # 点击版本菜单
         self.main_page.click_version_menu()
         
@@ -1669,13 +1142,6 @@ class MainHandler(BaseHandler):
         # 验证当前页面是主页面
         if not self.main_page.is_main_page_present():
             raise Exception("当前不在主页面，无法导航到手册")
-        
-        # 点击帮助主菜单
-        self.main_page.click_help_parent_menu()
-        
-        # 关键改进：等待主菜单展开，给子菜单足够的显示时间
-        self.log.info("等待子菜单展开...")
-        time.sleep(1)  # 等待1秒让子菜单完全展开
         
         # 点击手册菜单
         self.main_page.click_manual_menu()

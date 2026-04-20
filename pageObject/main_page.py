@@ -5,9 +5,6 @@
 import time
 import allure
 
-from selenium.webdriver.common.by import By
-from appium.webdriver.common.appiumby import AppiumBy
-
 from .base_page import BasePage
 from utils.logger import Logger
 import logging
@@ -130,27 +127,27 @@ class MainPage(BasePage):
 
     def click_marginal_box_menu(self):
         """点击边缘盒子配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'marginal_box_menu')
+        return self._click_menu_element('system_management', 'marginal_box_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_job_position_menu(self):
         """点击作业位配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'job_position_menu')
+        return self._click_menu_element('system_management', 'job_position_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_camera_menu(self):
         """点击摄像头配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'camera_menu')
+        return self._click_menu_element('system_management', 'camera_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_claude_server_menu(self):
         """点击云服务器配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'claude_server_menu')
+        return self._click_menu_element('system_management', 'claude_server_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_self_developed_algorithm_parameter_menu(self):
         """点击自研算法配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'self_developed_algorithm_parameter_menu')
+        return self._click_menu_element('system_management', 'self_developed_algorithm_parameter_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_self_developed_AI_task_start_and_stop_menu(self):
-        """点击自研算法配置菜单"""
-        return self._click_menu_element('system_management', 'AI_configuration_menu', 'child_menus', 'self_developed_AI_task_start_and_stop_menu')
+        """点击自研算法任务启停菜单"""
+        return self._click_menu_element('system_management', 'self_developed_AI_task_start_and_stop_menu', 'AI_configuration_menu', 'child_menus')
 
     def click_station_oil_extraction_limit_menu(self):
         """点击货位提油限制菜单"""
@@ -225,11 +222,11 @@ class MainPage(BasePage):
 
     def click_read_write_additive_ratio_menu(self):
         """点击读写添加剂配比菜单"""
-        return self._click_menu_element('loading_instrument', 'additive_menu', 'child_menus', 'read_write_additive_ratio_menu')
+        return self._click_menu_element('loading_instrument', 'read_write_additive_ratio_menu', 'additive_menu', 'child_menus')
 
     def click_read_write_additive_meter_menu(self):
         """点击读写添加剂计密菜单"""
-        return self._click_menu_element('loading_instrument', 'additive_menu', 'child_menus', 'read_write_additive_meter_menu')
+        return self._click_menu_element('loading_instrument', 'read_write_additive_meter_menu', 'additive_menu', 'child_menus')
 
     # 报表管理菜单导航函数
     def click_report_management_parent_menu(self):
@@ -419,8 +416,10 @@ class MainPage(BasePage):
         """
         通用的菜单点击方法
         :param menu_category: 菜单类别（如 user_management, system_management 等）
-        :param menu_name: 菜单名称
-        :param sub_menu_path: 多级菜单路径（可选）
+        :param menu_name: 目标菜单名称
+        :param sub_menu_path: 从category根到目标菜单容器的YAML路径（可选）
+            例: ('AI_configuration_menu', 'child_menus') 表示
+            menu_config['AI_configuration_menu']['child_menus'][menu_name]
         :return: 操作是否成功
         """
         import time
@@ -444,7 +443,7 @@ class MainPage(BasePage):
                 menu_locator = menu_config.get(menu_name, {})
 
             if not menu_locator:
-                self.log.error(f"未找到菜单定位器: {menu_category} -> {menu_name}")
+                self.log.error(f"未找到菜单定位器: {menu_category} -> {menu_name}, sub_path={sub_menu_path}")
                 return False
 
             self.log.info(f"尝试点击菜单: {menu_category} -> {menu_name}")
@@ -495,6 +494,27 @@ class MainPage(BasePage):
                             self.log.error(f"父菜单点击失败，无法继续: {parent_menu_name}")
                             return False
 
+                # 点击中间菜单（多级菜单路径时需要逐级展开）
+                if sub_menu_path:
+                    inter_config = menu_config
+                    for path_item in sub_menu_path:
+                        inter_config = inter_config.get(path_item, {})
+                        # 如果该节点有 name 属性，说明是可点击的菜单项
+                        if 'name' in inter_config:
+                            self.log.info(f"点击中间菜单: {path_item} (name={inter_config['name']})")
+                            inter_element = self.locate_element(**inter_config)
+                            if inter_element:
+                                try:
+                                    inter_element.click()
+                                    self.log.info(f"✅ 中间菜单点击成功: {path_item}")
+                                    time.sleep(0.5)
+                                except Exception as e:
+                                    self.log.warning(f"中间菜单点击失败: {path_item}, {e}")
+                                    return False
+                            else:
+                                self.log.error(f"中间菜单定位失败: {path_item}")
+                                return False
+
             # 点击目标菜单
             element = self.locate_element(**menu_locator)
             if element:
@@ -503,12 +523,7 @@ class MainPage(BasePage):
                 self.log.info(f"点击菜单成功: {menu_category} -> {menu_name}")
                 return True
             else:
-                self.log.error(f"未找到菜单元素")
-
-                # 诊断：查看主窗口中有哪些元素
-                self.log.warning("=== 开始诊断主窗口元素 ===")
-                self.diagnose_main_window_elements()
-
+                self.log.error(f"未找到菜单元素: {menu_category} -> {menu_name}, locator={menu_locator}")
                 return False
 
         except Exception as e:
@@ -570,117 +585,6 @@ class MainPage(BasePage):
             self.log.warning(f"切换到主窗口时出错: {e}")
             return False
 
-    def diagnose_main_window_elements(self):
-        """
-        诊断主窗口中的元素，帮助确定正确的定位方式
-        """
-        try:
-            self.log.info("=== 开始诊断主窗口元素 ===")
-
-            # 确保在主窗口
-            self._ensure_main_window()
-
-            # 获取窗口标题
-            title = self.driver.title
-            self.log.info(f"当前窗口标题: {title}")
-
-            # 1) 先用 W3C/Appium 原生定位策略（NovaWindows 推荐路径，
-            #    XPath 可能在属性名大小写/命名空间上跟 WinAppDriver 不一致）
-            native_strategies = [
-                (AppiumBy.NAME, '系统管理', "AppiumBy.NAME='系统管理'"),
-                (AppiumBy.NAME, '用户管理', "AppiumBy.NAME='用户管理'"),
-                (AppiumBy.ACCESSIBILITY_ID, 'menuStrip1', "AccessibilityId='menuStrip1'"),
-                (AppiumBy.CLASS_NAME, 'MenuStrip', "ClassName='MenuStrip'"),
-                (AppiumBy.CLASS_NAME, 'ToolStripMenuItem', "ClassName='ToolStripMenuItem'"),
-                (AppiumBy.CLASS_NAME, 'MenuItem', "ClassName='MenuItem'"),
-            ]
-            for by, val, desc in native_strategies:
-                try:
-                    elements = self.driver.find_elements(by, val)
-                    if elements:
-                        self.log.info(f"✅ [{desc}] 找到 {len(elements)} 个元素")
-                        for elem in elements[:5]:
-                            try:
-                                name = elem.get_attribute("Name") or "无"
-                                ct = elem.get_attribute("ControlType") or elem.get_attribute("LocalizedControlType") or "无"
-                                aid = elem.get_attribute("AutomationId") or "无"
-                                cls = elem.get_attribute("ClassName") or "无"
-                                self.log.info(f"   - Name={name}, ControlType={ct}, ClassName={cls}, AutomationId={aid}")
-                            except Exception as e:
-                                self.log.debug(f"     get_attribute 失败: {e}")
-                    else:
-                        self.log.info(f"❌ [{desc}] 未找到元素")
-                except Exception as e:
-                    self.log.info(f"❌ [{desc}] 查询出错: {e}")
-
-            # 2) XPath 多种属性写法（NovaWindows 的属性名可能是 Name/name 不同）
-            xpath_strategies = [
-                ("//*[@Name='系统管理']", "XPath @Name='系统管理'"),
-                ("//*[@name='系统管理']", "XPath @name='系统管理' (小写)"),
-                ("//MenuItem[@Name='系统管理']", "MenuItem + Name"),
-                ("//*[contains(@Name,'系统')]", "XPath contains(@Name,'系统')"),
-                ("//MenuItem", "所有 MenuItem 标签"),
-                ("//MenuBar", "所有 MenuBar 标签"),
-                ("//*[@LocalizedControlType='菜单项']", "XPath @LocalizedControlType='菜单项'"),
-                ("//*[@LocalizedControlType='menu item']", "XPath @LocalizedControlType='menu item'"),
-                ("//Window//*", "Window 下所有元素 (前几个)"),
-            ]
-
-            for xpath, desc in xpath_strategies:
-                try:
-                    elements = self.driver.find_elements(By.XPATH, xpath)
-                    if elements:
-                        self.log.info(f"✅ [{desc}] 找到 {len(elements)} 个元素")
-                        for elem in elements[:5]:
-                            try:
-                                name = elem.get_attribute("Name") or "无"
-                                ct = elem.get_attribute("LocalizedControlType") or elem.get_attribute("ControlType") or "无"
-                                cls = elem.get_attribute("ClassName") or "无"
-                                self.log.info(f"   - Name={name}, ControlType={ct}, ClassName={cls}")
-                            except Exception:
-                                pass
-                    else:
-                        self.log.info(f"❌ [{desc}] 未找到元素")
-                except Exception as e:
-                    self.log.info(f"❌ [{desc}] 查询出错: {e}")
-
-            # 3) Dump page_source 的前 4000 字符，看 NovaWindows 给出的 XML 结构
-            try:
-                ps = self.driver.page_source or ''
-                self.log.info(f"=== page_source 长度 {len(ps)}，前 4000 字符 ===")
-                self.log.info(ps[:4000])
-            except Exception as e:
-                self.log.warning(f"获取 page_source 失败: {e}")
-
-            # 尝试查找主窗口的容器元素
-            self.log.info("尝试查找主窗口容器...")
-            container_strategies = [
-                "//Window[@Name='装车管理系统']",
-                "//*[@Name='装车管理系统'][@ControlType='Window']",
-                "//Window",
-            ]
-            for xpath in container_strategies:
-                try:
-                    elements = self.driver.find_elements(By.XPATH, xpath)
-                    if elements:
-                        self.log.info(f"✅ 容器 [{xpath}] 找到 {len(elements)} 个元素")
-                        for elem in elements[:3]:
-                            try:
-                                name = elem.get_attribute("Name") or "无"
-                                ct = elem.get_attribute("ControlType") or "无"
-                                self.log.info(f"   - Name={name}, ControlType={ct}")
-                            except:
-                                pass
-                except:
-                    pass
-
-            self.log.info("=== 诊断完成 ===")
-            return True
-        except Exception as e:
-            self.log.error(f"诊断失败: {e}")
-            return False
-
-
     def is_main_page_present(self, timeout=30):
         """
         检查主界面是否存在
@@ -732,16 +636,8 @@ class MainPage(BasePage):
                 if main_window_name in current_title:
                     self.log.info(f"✅ 主界面已加载完成，窗口标题: {current_title}")
 
-                    # 额外验证：检查系统管理菜单是否存在
-                    try:
-                        menu_element = self.driver.find_element(By.XPATH, "//*[@Name='系统管理']")
-                        if menu_element:
-                            self.log.info("✅ 验证通过：系统管理菜单存在")
-                            return True
-                    except:
-                        self.log.debug("系统管理菜单定位失败，但主窗口标题正确，继续...")
-                        # 窗口标题正确就返回True
-                        return True
+                    # 窗口标题正确就返回True
+                    return True
 
                 time.sleep(0.5)
 

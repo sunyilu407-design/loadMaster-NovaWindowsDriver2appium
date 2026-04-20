@@ -30,7 +30,7 @@ elements:
   # 系统管理模块元素定位
   system_management:
     system_management_parent_menu:
-        name: "系统管理"
+        name: "系统配置"
         # 暂时移除 control_type，用更宽松的定位方式
         # control_type: "MenuItem"
     customer_menu:
