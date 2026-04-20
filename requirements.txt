@@ -1,0 +1,48 @@
+# ========================================
+# 自动化测试框架 - NovaWindows 版本依赖
+# ========================================
+# 注意：NovaWindows Driver 需要 Appium 3.x，通过 npm 安装：
+#   npm install -g appium@next
+#   appium driver install --source=npm appium-novawindows-driver
+#
+# Python 端依赖（pip install -r requirements.txt）
+appium>=3.0.0
+appium-python-client>=5.0.0
+
+# Web自动化 (保持兼容性)
+selenium==4.18.0
+
+# 测试框架
+pytest==8.3.3
+pytest-allure-adaptor==1.7.12
+allure-pytest==2.13.5
+pytest-xdist==3.6.1  # 并行测试支持
+
+# 页面对象和配置管理
+PyYAML==6.0.1
+configparser==7.2.0
+
+# 数据库支持
+SQLAlchemy==2.0.31
+PyMySQL==1.1.0
+
+# 日志和工具
+loguru==0.7.2
+colorama==0.4.6
+python-dotenv==1.0.1
+
+# 数据处理
+pandas==2.2.2
+numpy==1.26.4
+
+# Web框架 (可选)
+requests==2.32.3
+
+# ========================================
+# 快速安装
+# ========================================
+# pip install -r requirements.txt
+#
+# 注意：Appium 服务器本身需要通过 npm 安装：
+#   npm install -g appium@next
+#   appium driver install --source=npm appium-novawindows-driver
