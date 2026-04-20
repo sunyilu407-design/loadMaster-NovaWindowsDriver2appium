@@ -585,7 +585,7 @@ class MainPage(BasePage):
             self.log.warning(f"切换到主窗口时出错: {e}")
             return False
 
-    def is_main_page_present(self, timeout=30):
+    def is_main_page_present(self, timeout=10):
         """
         检查主界面是否存在
         通过检查主窗口是否出现来验证主界面加载完成

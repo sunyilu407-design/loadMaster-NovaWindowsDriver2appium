@@ -179,7 +179,7 @@ class MainHandler(BaseHandler):
             # 等待主界面加载完成
             with allure.step("等待主界面加载"):
                 self.log.info("等待主界面加载完成...")
-                if not self.main_page.is_main_page_present(timeout=30):
+                if not self.main_page.is_main_page_present(timeout=10):
                     self.log.warning("主界面加载超时，但继续尝试...")
 
             # 直接点击客户信息管理菜单
