@@ -107,9 +107,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到密码修改")
         
         # 点击密码修改菜单
-        return self.main_page.click_passWord_change_menu()
+        result = self.main_page.click_passWord_change_menu()
         
         self.log.info("成功导航到密码修改页面")
+        return result
     
     def navigate_to_username_change(self):
         """
@@ -122,9 +123,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到用户名修改")
         
         # 点击用户名修改菜单
-        return self.main_page.click_userName_change_menu()
+        result = self.main_page.click_userName_change_menu()
         
         self.log.info("成功导航到用户名修改页面")
+        return result
     
     def navigate_to_user_login(self):
         """
@@ -137,9 +139,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到用户登录")
         
         # 点击用户登录菜单
-        return self.main_page.click_user_login_menu()
+        result = self.main_page.click_user_login_menu()
         
         self.log.info("成功导航到用户登录页面")
+        return result
     
     def navigate_to_user_logout(self):
         """
@@ -152,9 +155,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到退出登录")
         
         # 点击退出登录菜单
-        return self.main_page.click_user_logout_menu()
+        result = self.main_page.click_user_logout_menu()
         
         self.log.info("成功导航到退出登录页面")
+        return result
     
     def is_main_page_present(self):
         """
@@ -202,9 +206,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击串口信息管理菜单
-        return self.main_page.click_serial_port_menu()
+        result = self.main_page.click_serial_port_menu()
         
         self.log.info("成功导航到串口信息管理页面")
+        return result
     
     def navigate_to_station_management(self):
         """
@@ -218,9 +223,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击货位信息管理菜单
-        return self.main_page.click_station_menu()
+        result = self.main_page.click_station_menu()
         
         self.log.info("成功导航到货位信息管理页面")
+        return result
     
     def navigate_to_oil_management(self):
         """
@@ -234,9 +240,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击油品信息管理菜单
-        return self.main_page.click_oil_menu()
+        result = self.main_page.click_oil_menu()
         
         self.log.info("成功导航到油品信息管理页面")
+        return result
     
     def navigate_to_configuration_settings(self):
         """
@@ -250,9 +257,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击配置设定菜单
-        return self.main_page.click_configuration_settings_menu()
+        result = self.main_page.click_configuration_settings_menu()
         
         self.log.info("成功导航到配置设定页面")
+        return result
     
     def navigate_to_oil_density(self):
         """
@@ -266,9 +274,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击发油密度菜单
-        return self.main_page.click_oil_density_menu()
+        result = self.main_page.click_oil_density_menu()
         
         self.log.info("成功导航到发油密度页面")
+        return result
     
     def navigate_to_station_tank_configuration(self):
         """
@@ -282,9 +291,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击货位油罐配置菜单
-        return self.main_page.click_station_tank_menu()
+        result = self.main_page.click_station_tank_menu()
         
         self.log.info("成功导航到货位油罐配置页面")
+        return result
     
     def navigate_to_oil_distribution_rules(self):
         """
@@ -298,9 +308,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击发油规则设置菜单
-        return self.main_page.click_oil_distribution_rules_menu()
+        result = self.main_page.click_oil_distribution_rules_menu()
         
         self.log.info("成功导航到发油规则设置页面")
+        return result
     
     def navigate_to_system_decimal_settings(self):
         """
@@ -314,9 +325,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击系统单位小数设置菜单
-        return self.main_page.click_system_decimal_settings_menu()
+        result = self.main_page.click_system_decimal_settings_menu()
         
         self.log.info("成功导航到系统单位小数设置页面")
+        return result
     
     def navigate_to_marginal_box_configuration(self):
         """
@@ -329,9 +341,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到边缘盒子配置")
         
         # 点击边缘盒子配置子菜单
-        return self.main_page.click_marginal_box_menu()
+        result = self.main_page.click_marginal_box_menu()
         
         self.log.info("成功导航到边缘盒子配置页面")
+        return result
     
     def navigate_to_job_position_configuration(self):
         """
@@ -344,9 +357,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到作业位配置")
         
         # 点击作业位配置子菜单
-        return self.main_page.click_job_position_menu()
+        result = self.main_page.click_job_position_menu()
         
         self.log.info("成功导航到作业位配置页面")
+        return result
     
     def navigate_to_camera_configuration(self):
         """
@@ -359,9 +373,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到摄像头配置")
         
         # 点击摄像头配置子菜单
-        return self.main_page.click_camera_menu()
+        result = self.main_page.click_camera_menu()
         
         self.log.info("成功导航到摄像头配置页面")
+        return result
     
     def navigate_to_claude_server_configuration(self):
         """
@@ -374,9 +389,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到云服务器配置")
         
         # 点击云服务器配置子菜单
-        return self.main_page.click_claude_server_menu()
+        result = self.main_page.click_claude_server_menu()
         
         self.log.info("成功导航到云服务器配置页面")
+        return result
     
     def navigate_to_self_developed_algorithm_parameter(self):
         """
@@ -389,9 +405,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到自研算法配置")
         
         # 点击自研算法配置子菜单
-        return self.main_page.click_self_developed_algorithm_parameter_menu()
+        result = self.main_page.click_self_developed_algorithm_parameter_menu()
         
         self.log.info("成功导航到自研算法配置页面")
+        return result
     
     def navigate_to_self_developed_AI_task_start_and_stop(self):
         """
@@ -404,9 +421,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到自研算法任务启停")
         
         # 点击自研算法任务启停子菜单
-        return self.main_page.click_self_developed_AI_task_start_and_stop_menu()
+        result = self.main_page.click_self_developed_AI_task_start_and_stop_menu()
         
         self.log.info("成功导航到自研算法任务启停页面")
+        return result
     
     def navigate_to_station_oil_extraction_limit(self):
         """
@@ -420,9 +438,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击货位提油限制菜单
-        return self.main_page.click_station_oil_extraction_limit_menu()
+        result = self.main_page.click_station_oil_extraction_limit_menu()
         
         self.log.info("成功导航到货位提油限制页面")
+        return result
     
     def navigate_to_car_management(self):
         """
@@ -436,9 +455,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击车辆管理菜单
-        return self.main_page.click_car_menu()
+        result = self.main_page.click_car_menu()
         
         self.log.info("成功导航到车辆管理页面")
+        return result
     
     def navigate_to_document_management(self):
         """
@@ -452,9 +472,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击文档管理菜单
-        return self.main_page.click_document_menu()
+        result = self.main_page.click_document_menu()
         
         self.log.info("成功导航到文档管理页面")
+        return result
     
     def navigate_to_score_management(self):
         """
@@ -468,9 +489,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击评分管理菜单
-        return self.main_page.click_score_menu()
+        result = self.main_page.click_score_menu()
         
         self.log.info("成功导航到评分管理页面")
+        return result
     
     def navigate_to_voice_settings(self):
         """
@@ -484,9 +506,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击语音播报设置菜单
-        return self.main_page.click_voice_menu()
+        result = self.main_page.click_voice_menu()
         
         self.log.info("成功导航到语音播报设置页面")
+        return result
     
     def navigate_to_device_management(self):
         """
@@ -500,9 +523,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击设备信息管理菜单
-        return self.main_page.click_device_menu()
+        result = self.main_page.click_device_menu()
         
         self.log.info("成功导航到设备信息管理页面")
+        return result
 
 
         #装车仪菜单导航函数
@@ -518,9 +542,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写标准密度菜单
-        return self.main_page.click_read_write_standard_density_menu()
+        result = self.main_page.click_read_write_standard_density_menu()
         
         self.log.info("成功导航到读写标准密度页面")
+        return result
     
     def navigate_to_read_write_ethanol_ratio(self):
         """
@@ -534,9 +559,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写乙醇比菜单
-        return self.main_page.click_read_write_ethanol_ratio_menu()
+        result = self.main_page.click_read_write_ethanol_ratio_menu()
         
         self.log.info("成功导航到读写乙醇比页面")
+        return result
     
     def navigate_to_read_write_flow_rate(self):
         """
@@ -550,9 +576,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写流速参数菜单
-        return self.main_page.click_read_write_flow_rate_menu()
+        result = self.main_page.click_read_write_flow_rate_menu()
         
         self.log.info("成功导航到读写流速参数页面")
+        return result
     
     def navigate_to_read_write_cumulative_amount(self):
         """
@@ -566,9 +593,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写累积量菜单
-        return self.main_page.click_read_write_cumulative_amount_menu()
+        result = self.main_page.click_read_write_cumulative_amount_menu()
         
         self.log.info("成功导航到读写累积量页面")
+        return result
     
     def navigate_to_read_write_pulse_parameters(self):
         """
@@ -582,9 +610,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写脉冲参数菜单
-        return self.main_page.click_read_write_pulse_parameters_menu()
+        result = self.main_page.click_read_write_pulse_parameters_menu()
         
         self.log.info("成功导航到读写脉冲参数页面")
+        return result
     
     def navigate_to_read_write_temperature_change(self):
         """
@@ -598,9 +627,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写温变参数菜单
-        return self.main_page.click_read_write_temperature_change_menu()
+        result = self.main_page.click_read_write_temperature_change_menu()
         
         self.log.info("成功导航到读写温变参数页面")
+        return result
     
     def navigate_to_read_write_password(self):
         """
@@ -614,9 +644,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写密码菜单
-        return self.main_page.click_read_write_passWrod_menu()
+        result = self.main_page.click_read_write_passWrod_menu()
         
         self.log.info("成功导航到读写密码页面")
+        return result
     
     def navigate_to_read_history(self):
         """
@@ -630,9 +661,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写历史记录菜单
-        return self.main_page.click_read_history_menu()
+        result = self.main_page.click_read_history_menu()
         
         self.log.info("成功导航到读写历史记录页面")
+        return result
     
     def navigate_to_read_write_average_temperature(self):
         """
@@ -646,9 +678,10 @@ class MainHandler(BaseHandler):
         
 
         # 点击读写平均温度修正量菜单
-        return self.main_page.click_read_write_average_temperature_menu()
+        result = self.main_page.click_read_write_average_temperature_menu()
         
         self.log.info("成功导航到读写平均温度修正量页面")
+        return result
     
     def navigate_to_read_write_additive_ratio(self):
         """
@@ -661,9 +694,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到读写添加剂配比")
         
         # 点击读写添加剂配比子菜单
-        return self.main_page.click_read_write_additive_ratio_menu()
+        result = self.main_page.click_read_write_additive_ratio_menu()
         
         self.log.info("成功导航到读写添加剂配比页面")
+        return result
     
     def navigate_to_read_write_additive_meter(self):
         """
@@ -676,9 +710,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到读写添加剂计密")
         
         # 点击读写添加剂计密子菜单
-        return self.main_page.click_read_write_additive_meter_menu()
+        result = self.main_page.click_read_write_additive_meter_menu()
         
         self.log.info("成功导航到读写添加剂计密页面")
+        return result
     
       # 报表管理导航函数
     def navigate_to_distribution_record_report(self):
@@ -692,9 +727,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到发放记录报表")
         
         # 点击发放记录报表菜单
-        return self.main_page.click_distribution_record_report_menu()
+        result = self.main_page.click_distribution_record_report_menu()
         
         self.log.info("成功导航到发放记录报表页面")
+        return result
     
     def navigate_to_oil_dispensing_platform_statistics_report(self):
         """
@@ -707,9 +743,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到付油台提油统计表")
         
         # 点击付油台提油统计表菜单
-        return self.main_page.click_oil_dispensing_platform_statistics_report_menu()
+        result = self.main_page.click_oil_dispensing_platform_statistics_report_menu()
         
         self.log.info("成功导航到付油台提油统计表页面")
+        return result
     
     def navigate_to_oil_depot_flowmeter_oil_dispensing_report(self):
         """
@@ -722,9 +759,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到油库流量计发油记录")
         
         # 点击油库流量计发油记录菜单
-        return self.main_page.click_oil_depot_flowmeter_oil_dispensing_report_menu()
+        result = self.main_page.click_oil_depot_flowmeter_oil_dispensing_report_menu()
         
         self.log.info("成功导航到油库流量计发油记录页面")
+        return result
     
     def navigate_to_station_alarm_record_report(self):
         """
@@ -737,9 +775,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到货位报警记录")
         
         # 点击货位报警记录菜单
-        return self.main_page.click_station_alarm_record_report_menu()
+        result = self.main_page.click_station_alarm_record_report_menu()
         
         self.log.info("成功导航到货位报警记录页面")
+        return result
     
     def navigate_to_flowmeter_summary_report(self):
         """
@@ -752,9 +791,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到流量计汇总报表")
         
         # 点击流量计汇总报表菜单
-        return self.main_page.click_flowmeter_summary_report_menu()
+        result = self.main_page.click_flowmeter_summary_report_menu()
         
         self.log.info("成功导航到流量计汇总报表页面")
+        return result
     
     def navigate_to_logistics_density_confirmation_issued_log_report(self):
         """
@@ -767,9 +807,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到物流密度确认下发日志")
         
         # 点击物流密度确认下发日志菜单
-        return self.main_page.click_logistics_density_confirmation_issued_log_menu()
+        result = self.main_page.click_logistics_density_confirmation_issued_log_menu()
         
         self.log.info("成功导航到物流密度确认下发日志页面")
+        return result
     
     def navigate_to_oil_application_work_report(self):
         """
@@ -782,9 +823,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到发油作业报告单")
         
         # 点击发油作业报告单菜单
-        return self.main_page.click_oil_application_work_report_menu()
+        result = self.main_page.click_oil_application_work_report_menu()
         
         self.log.info("成功导航到发油作业报告单页面")
+        return result
     
     def navigate_to_data_upload_liquid_level_deepen_platform_report(self):
         """
@@ -797,9 +839,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到数据上传液位深化平台报表")
         
         # 点击数据上传液位深化平台报表菜单
-        return self.main_page.click_data_upload_liquid_level_deepen_platform_report_menu()
+        result = self.main_page.click_data_upload_liquid_level_deepen_platform_report_menu()
         
         self.log.info("成功导航到数据上传液位深化平台报表页面")
+        return result
     
     def navigate_to_temperature_density_record_inquiry_report(self):
         """
@@ -812,9 +855,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到温度密度记录查询报表")
         
         # 点击温度密度记录查询报表菜单
-        return self.main_page.click_temperature_density_record_inquiry_report_menu()
+        result = self.main_page.click_temperature_density_record_inquiry_report_menu()
         
         self.log.info("成功导航到温度密度记录查询报表页面")
+        return result
     
     def navigate_to_online_oil_delivery_report(self):
         """
@@ -827,9 +871,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到联机发油报表")
         
         # 点击联机发油报表菜单
-        return self.main_page.click_online_oil_delivery_report_menu()
+        result = self.main_page.click_online_oil_delivery_report_menu()
         
         self.log.info("成功导航到联机发油报表页面")
+        return result
     
     def navigate_to_offline_oil_delivery_report(self):
         """
@@ -842,9 +887,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到脱机发油报表")
         
         # 点击脱机发油报表菜单
-        return self.main_page.click_offline_oil_delivery_report_menu()
+        result = self.main_page.click_offline_oil_delivery_report_menu()
         
         self.log.info("成功导航到脱机发油报表页面")
+        return result
     
     def navigate_to_check_in_record_report(self):
         """
@@ -857,9 +903,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到打卡记录查询报表")
         
         # 点击打卡记录查询报表菜单
-        return self.main_page.click_check_in_record_report_menu()
+        result = self.main_page.click_check_in_record_report_menu()
         
         self.log.info("成功导航到打卡记录查询报表页面")
+        return result
     
     def navigate_to_flow_meter_loss_and_gain_report(self):
         """
@@ -872,9 +919,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到流量计班结损溢报表")
         
         # 点击流量计班结损溢报表菜单
-        return self.main_page.click_flow_meter_loss_and_gain_report_menu()
+        result = self.main_page.click_flow_meter_loss_and_gain_report_menu()
         
         self.log.info("成功导航到流量计班结损溢报表页面")
+        return result
     
     def navigate_to_operation_log_report(self):
         """
@@ -887,9 +935,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到操作日志查询")
         
         # 点击操作日志查询菜单
-        return self.main_page.click_operation_log_report_menu()
+        result = self.main_page.click_operation_log_report_menu()
         
         self.log.info("成功导航到操作日志查询页面")
+        return result
     
     def navigate_to_outbound_daily_summary_report(self):
         """
@@ -902,9 +951,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到出库日结表")
         
         # 点击出库日结表菜单
-        return self.main_page.click_outbound_daily_summary_report_menu()
+        result = self.main_page.click_outbound_daily_summary_report_menu()
         
         self.log.info("成功导航到出库日结表页面")
+        return result
     
     def navigate_to_oil_dispensing_data_statistics_report(self):
         """
@@ -917,9 +967,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到发油数据统计")
         
         # 点击发油数据统计菜单
-        return self.main_page.click_oil_dispensing_data_statistics_report_menu()
+        result = self.main_page.click_oil_dispensing_data_statistics_report_menu()
         
         self.log.info("成功导航到发油数据统计页面")
+        return result
     
     def navigate_to_posting_intermediate_report(self):
         """
@@ -932,9 +983,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到过账中间表")
         
         # 点击过账中间表菜单
-        return self.main_page.click_posting_intermediate_report_menu()
+        result = self.main_page.click_posting_intermediate_report_menu()
         
         self.log.info("成功导航到过账中间表页面")
+        return result
     
     def navigate_to_logistics_density_confirmation_issued_report(self):
         """
@@ -947,9 +999,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到物流密度确认下发")
         
         # 点击物流密度确认下发菜单
-        return self.main_page.click_logistics_density_confirmation_issued_report_menu()
+        result = self.main_page.click_logistics_density_confirmation_issued_report_menu()
         
         self.log.info("成功导航到物流密度确认下发页面")
+        return result
     
     def navigate_to_oil_dispensing_density_inquiry_report(self):
         """
@@ -962,9 +1015,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到发油密度查询")
         
         # 点击发油密度查询菜单
-        return self.main_page.click_oil_dispensing_density_inquiry_report_menu()
+        result = self.main_page.click_oil_dispensing_density_inquiry_report_menu()
         
         self.log.info("成功导航到发油密度查询页面")
+        return result
     
     def navigate_to_microcomputer_oil_dispensing_report(self):
         """
@@ -977,9 +1031,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到微机发油报表")
         
         # 点击微机发油报表菜单
-        return self.main_page.click_microcomputer_oil_dispensing_report_menu()
+        result = self.main_page.click_microcomputer_oil_dispensing_report_menu()
         
         self.log.info("成功导航到微机发油报表页面")
+        return result
     
     def navigate_to_crane_position_statistics_report(self):
         """
@@ -992,9 +1047,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到鹤位统计报表")
         
         # 点击鹤位统计报表菜单
-        return self.main_page.click_crane_position_statistics_report_menu()
+        result = self.main_page.click_crane_position_statistics_report_menu()
         
         self.log.info("成功导航到鹤位统计报表页面")
+        return result
     
     def navigate_to_alarm_record_report(self):
         """
@@ -1007,9 +1063,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到告警记录报表")
         
         # 点击告警记录报表菜单
-        return self.main_page.click_alarm_record_report_menu()
+        result = self.main_page.click_alarm_record_report_menu()
         
         self.log.info("成功导航到告警记录报表页面")
+        return result
     
 
     # 系统工具菜单导航函数
@@ -1024,9 +1081,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到工作卡管理")
         
         # 点击工作卡管理菜单
-        return self.main_page.click_working_card_management_menu()
+        result = self.main_page.click_working_card_management_menu()
         
         self.log.info("成功导航到工作卡管理页面")
+        return result
     
     def navigate_to_key_card_management(self):
         """
@@ -1039,9 +1097,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到钥匙卡管理")
         
         # 点击钥匙卡管理菜单
-        return self.main_page.click_key_card_management_menu()
+        result = self.main_page.click_key_card_management_menu()
         
         self.log.info("成功导航到钥匙卡管理页面")
+        return result
     
     def navigate_to_joint_venture_card_management(self):
         """
@@ -1054,9 +1113,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到合资卡管理")
         
         # 点击合资卡管理菜单
-        return self.main_page.click_joint_venture_card_management_menu()
+        result = self.main_page.click_joint_venture_card_management_menu()
         
         self.log.info("成功导航到合资卡管理页面")
+        return result
     
     def navigate_to_managed_card_management(self):
         """
@@ -1069,9 +1129,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到代管卡管理")
         
         # 点击代管卡管理菜单
-        return self.main_page.click_managed_card_management_menu()
+        result = self.main_page.click_managed_card_management_menu()
         
         self.log.info("成功导航到代管卡管理页面")
+        return result
     
     def navigate_to_vehicle_card_binding_management(self):
         """
@@ -1084,9 +1145,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到车辆绑卡管理")
         
         # 点击车辆绑卡管理菜单
-        return self.main_page.click_vehicle_card_binding_management_menu()
+        result = self.main_page.click_vehicle_card_binding_management_menu()
         
         self.log.info("成功导航到车辆绑卡管理页面")
+        return result
     
     def navigate_to_backup_database(self):
         """
@@ -1099,9 +1161,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到备份数据库")
         
         # 点击备份数据库菜单
-        return self.main_page.click_backup_database_menu()
+        result = self.main_page.click_backup_database_menu()
         
         self.log.info("成功导航到备份数据库页面")
+        return result
     
     # 帮助菜单导航函数
     def navigate_to_register(self):
@@ -1115,9 +1178,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到注册")
         
         # 点击注册菜单
-        return self.main_page.click_register_menu()
+        result = self.main_page.click_register_menu()
         
         self.log.info("成功导航到注册页面")
+        return result
     
     def navigate_to_version(self):
         """
@@ -1130,9 +1194,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到版本")
         
         # 点击版本菜单
-        return self.main_page.click_version_menu()
+        result = self.main_page.click_version_menu()
         
         self.log.info("成功导航到版本页面")
+        return result
     
     def navigate_to_manual(self):
         """
@@ -1145,9 +1210,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到手册")
         
         # 点击手册菜单
-        return self.main_page.click_manual_menu()
+        result = self.main_page.click_manual_menu()
         
         self.log.info("成功导航到手册页面")
+        return result
     
     # 左侧菜单栏导航函数
     def navigate_to_home_page(self):
@@ -1161,9 +1227,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到首页")
         
         # 点击首页菜单
-        return self.main_page.click_home_page_menu()
+        result = self.main_page.click_home_page_menu()
         
         self.log.info("成功导航到首页页面")
+        return result
     
     def navigate_to_monitoring_page(self):
         """
@@ -1176,9 +1243,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到监控页面")
         
         # 点击监控页面菜单
-        return self.main_page.click_monitoring_page_menu()
+        result = self.main_page.click_monitoring_page_menu()
         
         self.log.info("成功导航到监控页面页面")
+        return result
     
     def navigate_to_loading_and_invoicing(self):
         """
@@ -1191,9 +1259,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到装车开票")
         
         # 点击装车开票菜单
-        return self.main_page.click_loading_and_invoicing_menu()
+        result = self.main_page.click_loading_and_invoicing_menu()
         
         self.log.info("成功导航到装车开票页面")
+        return result
     
     def navigate_to_customer_management_left(self):
         """
@@ -1206,9 +1275,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到客户管理（左侧菜单）")
         
         # 点击客户管理菜单
-        return self.main_page.click_customer_management_menu()
+        result = self.main_page.click_customer_management_menu()
         
         self.log.info("成功导航到客户管理（左侧菜单）页面")
+        return result
     
     def navigate_to_oil_information(self):
         """
@@ -1221,9 +1291,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到油品信息")
         
         # 点击油品信息菜单
-        return self.main_page.click_oil_information_menu()
+        result = self.main_page.click_oil_information_menu()
         
         self.log.info("成功导航到油品信息页面")
+        return result
     
     def navigate_to_configuration_settings_left(self):
         """
@@ -1236,9 +1307,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到配置设定（左侧菜单）")
         
         # 点击配置设定菜单
-        return self.main_page.click_configuration_settings_menu()
+        result = self.main_page.click_configuration_settings_menu()
         
         self.log.info("成功导航到配置设定（左侧菜单）页面")
+        return result
     
     def navigate_to_station_ticket_verification_settings(self):
         """
@@ -1251,9 +1323,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到货位验票设置")
         
         # 点击货位验票设置菜单
-        return self.main_page.click_station_ticket_verification_settings_menu()
+        result = self.main_page.click_station_ticket_verification_settings_menu()
         
         self.log.info("成功导航到货位验票设置页面")
+        return result
     
     def navigate_to_delivery_notification_setting(self):
         """
@@ -1266,9 +1339,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到发货通知设置")
         
         # 点击发货通知设置菜单
-        return self.main_page.click_delivery_notification_setting_menu()
+        result = self.main_page.click_delivery_notification_setting_menu()
         
         self.log.info("成功导航到发货通知设置页面")
+        return result
     
     def navigate_to_queuing_vehicle(self):
         """
@@ -1281,9 +1355,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到排队车辆")
         
         # 点击排队车辆菜单
-        return self.main_page.click_queuing_vehicle_menu()
+        result = self.main_page.click_queuing_vehicle_menu()
         
         self.log.info("成功导航到排队车辆页面")
+        return result
     
     def navigate_to_emergency_stop(self):
         """
@@ -1296,9 +1371,10 @@ class MainHandler(BaseHandler):
             raise Exception("当前不在主页面，无法导航到急停")
         
         # 点击急停菜单
-        return self.main_page.click_emergency_stop_menu()
+        result = self.main_page.click_emergency_stop_menu()
         
         self.log.info("成功导航到急停页面")
+        return result
     
     
   
