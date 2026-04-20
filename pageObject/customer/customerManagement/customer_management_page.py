@@ -51,8 +51,8 @@ class CustomerManagementPage(BasePage):
 
     # ==================== 窗口切换方法 ====================
     def switch_to_customer_management_window(self):
-        """确保会话绑定到主窗口（客户信息管理是 MDI 子窗口，在主窗口 UIA 树内直接可访问）"""
-        return self.ensure_main_window()
+        """切换到客户信息管理窗口（独立顶层窗口，需要 reattach 会话）"""
+        return self.switch_to_window(title=self.app_config['main_window_name'])
 
     # ==================== 按钮点击方法 ====================
     @allure.step("点击添加客户按钮")

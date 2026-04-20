@@ -454,74 +454,94 @@ class BasePage:
         self.log.error(f"等待窗口超时: {title}")
         return None
 
-    def switch_to_window(self, title=None, automation_id=None):
+    def switch_to_window(self, title=None, automation_id=None, timeout=15):
         """
-        切换到指定窗口（NovaWindows Driver 兼容版）
+        切换到指定窗口（NovaWindows Driver 兼容版，带重试等待）
         NovaWindows 的 switch_to.window() 不会重绑定 UIA 搜索根，
         必须通过 reattach_to_window 重建会话才能在新窗口中定位元素。
+        目标窗口可能在菜单点击后延迟出现，因此内置重试机制。
 
         :param title: 窗口标题（支持部分匹配）
         :param automation_id: 窗口的AutomationId（用于WinAppDriver对话框）
+        :param timeout: 等待目标窗口出现的最大秒数
         :return: 是否成功
         """
+        import time as _time
         from utils.driver_factory import DriverFactory
 
-        try:
-            window_handles = self.driver.window_handles
-            if not window_handles:
-                self.log.warning("当前没有可用的窗口")
-                return False
+        start = _time.time()
+        attempt = 0
 
-            matched_handle = None
-
-            for handle in window_handles:
-                try:
-                    self.driver.switch_to.window(handle)
-                    current_title = self.driver.title or ''
-
-                    # 方案1：通过 title 匹配
-                    if title and title in current_title:
-                        self.log.info(f"找到目标窗口: handle={handle}, title='{current_title}'")
-                        matched_handle = handle
-                        break
-
-                    # 方案2：通过 automation_id 匹配
-                    if automation_id:
-                        try:
-                            root_element = self.locate_element(timeout=1, automation_id=automation_id, type="Window")
-                            if root_element:
-                                self.log.info(f"找到目标窗口: handle={handle}, automation_id='{automation_id}'")
-                                matched_handle = handle
-                                break
-                        except Exception:
-                            pass
-                except Exception as e:
-                    self.log.debug(f"跳过已关闭的窗口 {handle}: {e}")
+        while _time.time() - start < timeout:
+            attempt += 1
+            try:
+                window_handles = self.driver.window_handles
+                if not window_handles:
+                    self.log.debug("当前没有可用的窗口，1秒后重试...")
+                    _time.sleep(1)
                     continue
 
-            if not matched_handle:
-                self.log.warning(f"❌ 未找到目标窗口: title='{title}', automation_id='{automation_id}'")
-                return False
+                matched_handle = None
+                seen_titles = []
 
-            # NovaWindows Driver: 必须 reattach 才能把 UIA 搜索根切到新窗口
-            ok = DriverFactory.reattach_to_window(self.driver, matched_handle)
-            if not ok:
-                self.log.warning(f"❌ reattach 到窗口失败: handle={matched_handle}")
-                return False
+                for handle in window_handles:
+                    try:
+                        self.driver.switch_to.window(handle)
+                        current_title = self.driver.title or ''
+                        seen_titles.append(f"{handle}='{current_title}'")
 
-            self.clear_cache()
-            # 清除主窗口绑定标志，后续回到主窗口时需要重新绑定
-            try:
-                self.driver._bound_to_main_window = False
-            except Exception:
-                pass
+                        if title and title in current_title:
+                            matched_handle = handle
+                            self.log.info(f"找到目标窗口: handle={handle}, title='{current_title}'")
+                            break
 
-            self.log.info(f"✅ 切换到窗口成功（reattach）: title='{title}', handle={matched_handle}")
-            return True
+                        if automation_id:
+                            try:
+                                root_element = self.locate_element(timeout=1, automation_id=automation_id, type="Window")
+                                if root_element:
+                                    matched_handle = handle
+                                    self.log.info(f"找到目标窗口: handle={handle}, automation_id='{automation_id}'")
+                                    break
+                            except Exception:
+                                pass
+                    except Exception as e:
+                        self.log.debug(f"跳过已关闭的窗口 {handle}: {e}")
+                        continue
 
-        except Exception as e:
-            self.log.error(f"❌ 切换窗口失败: {e}")
-            return False
+                if matched_handle:
+                    ok = DriverFactory.reattach_to_window(self.driver, matched_handle)
+                    if not ok:
+                        self.log.warning(f"❌ reattach 到窗口失败: handle={matched_handle}")
+                        return False
+
+                    self.clear_cache()
+                    try:
+                        self.driver._bound_to_main_window = False
+                    except Exception:
+                        pass
+                    self.log.info(f"✅ 切换到窗口成功（reattach）: title='{title}', handle={matched_handle}")
+                    return True
+
+                # 未找到，打印当前所有窗口标题便于调试
+                self.log.debug(f"第{attempt}次搜索未找到目标窗口 (title='{title}')，"
+                               f"当前窗口列表: [{', '.join(seen_titles)}]")
+
+                remaining = timeout - (_time.time() - start)
+                if remaining > 1:
+                    _time.sleep(1)
+                else:
+                    break
+
+            except Exception as e:
+                self.log.debug(f"搜索窗口时出错: {e}")
+                remaining = timeout - (_time.time() - start)
+                if remaining > 1:
+                    _time.sleep(1)
+                else:
+                    break
+
+        self.log.warning(f"❌ 切换窗口超时({timeout}s): title='{title}', automation_id='{automation_id}'")
+        return False
 
     def ensure_main_window(self, main_title='装车管理系统', excludes=None):
         """
