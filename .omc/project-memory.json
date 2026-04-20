@@ -1,0 +1,140 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776658056284,
+  "projectRoot": "/Users/ahs/work/loadMaster-NovaWindowsDriver2appium",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "config": {
+      "path": "config",
+      "purpose": "Configuration files",
+      "fileCount": 2,
+      "lastAccessed": 1776658056264,
+      "keyFiles": [
+        "CLAUDE.md",
+        "env.ini"
+      ]
+    },
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 1,
+      "lastAccessed": 1776658056265,
+      "keyFiles": [
+        "CLAUDE.md"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 1,
+      "lastAccessed": 1776658056265,
+      "keyFiles": [
+        "PAGE_DEVELOPMENT_GUIDE.md"
+      ]
+    },
+    "handlers": {
+      "path": "handlers",
+      "purpose": null,
+      "fileCount": 7,
+      "lastAccessed": 1776658056266,
+      "keyFiles": [
+        "CLAUDE.md",
+        "__init__.py",
+        "base_handler.py",
+        "login_handler.py",
+        "main_handler.py"
+      ]
+    },
+    "pageObject": {
+      "path": "pageObject",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1776658056266,
+      "keyFiles": [
+        "CLAUDE.md",
+        "__init__.py",
+        "base_page.py",
+        "login_page.py",
+        "main_page.py"
+      ]
+    },
+    "testCase": {
+      "path": "testCase",
+      "purpose": null,
+      "fileCount": 7,
+      "lastAccessed": 1776658056267,
+      "keyFiles": [
+        "CLAUDE.md",
+        "TEST_CASE_DEVELOPMENT_GUIDE.md",
+        "__init__.py",
+        "conftest.py",
+        "test_login_page.py"
+      ]
+    },
+    "utils": {
+      "path": "utils",
+      "purpose": "Utility functions",
+      "fileCount": 10,
+      "lastAccessed": 1776658056268,
+      "keyFiles": [
+        "CLAUDE.md",
+        "__init__.py",
+        "config_manager.py",
+        "db_helper.py",
+        "driver_factory.py"
+      ]
+    },
+    "data/pages": {
+      "path": "data/pages",
+      "purpose": "Page components",
+      "fileCount": 11,
+      "lastAccessed": 1776658056268,
+      "keyFiles": [
+        "common_dialogs.yaml",
+        "config_settings_page.yaml",
+        "customer_management_page.yaml"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
