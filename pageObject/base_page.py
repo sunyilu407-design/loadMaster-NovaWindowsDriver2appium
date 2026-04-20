@@ -523,7 +523,41 @@ class BasePage:
             self.log.error(f"❌ 切换窗口失败: {e}")
             return False
 
-    
+    def ensure_main_window(self, main_title='装车管理系统', excludes=None):
+        """
+        确保会话绑定到主窗口。
+        MDI 子窗口（如客户信息管理、油品管理等）的元素在主窗口 UIA 树内可直接访问，
+        无需独立 switch_to_window，只需保证 session 绑定在主窗口即可。
+
+        :param main_title: 主窗口标题关键字
+        :param excludes: 排除的标题关键字列表
+        :return: 是否成功
+        """
+        if getattr(self.driver, '_bound_to_main_window', False):
+            return True
+
+        from utils.driver_factory import DriverFactory
+        excludes = excludes or ['欢迎使用', '登录']
+
+        main_handle = DriverFactory.find_app_window_handle(
+            self.driver, title_contains=main_title, title_excludes=excludes,
+        )
+        if not main_handle:
+            self.log.warning("未找到主窗口句柄，无法绑定")
+            return False
+
+        ok = DriverFactory.reattach_to_window(self.driver, main_handle)
+        if not ok:
+            self.log.warning("绑定主窗口失败")
+            return False
+
+        self.clear_cache()
+        try:
+            self.driver._bound_to_main_window = True
+        except Exception:
+            pass
+        self.log.info("✅ 已绑定到主窗口（ensure_main_window）")
+        return True
 
     def take_screenshot(self, filename=None):
         """
