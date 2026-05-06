@@ -521,6 +521,7 @@ class MainPage(BasePage):
                 self.log.info(f"成功定位到菜单元素")
                 element.click()
                 self.log.info(f"点击菜单成功: {menu_category} -> {menu_name}")
+                time.sleep(1)  # 给子窗口打开和 window_handles 刷新的时间
                 return True
             else:
                 self.log.error(f"未找到菜单元素: {menu_category} -> {menu_name}, locator={menu_locator}")
@@ -642,7 +643,12 @@ class MainPage(BasePage):
                 time.sleep(0.5)
 
             except Exception as e:
-                self.log.debug(f"检查主界面时出现异常: {e}")
+                err_str = str(e)
+                if 'ElementNotAvailableException' in err_str or 'no longer available' in err_str:
+                    self.log.warning(f"主窗口 UIA 根已失效，尝试重绑定: {e}")
+                    self._ensure_main_window()
+                else:
+                    self.log.debug(f"检查主界面时出现异常: {e}")
                 time.sleep(0.5)
                 continue
 

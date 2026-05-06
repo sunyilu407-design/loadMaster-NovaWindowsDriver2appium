@@ -149,18 +149,26 @@ class BaseHandler:
             return False
 
         # 根据 action 调用对应的方法
+        clicked = False
         if action == 'confirm':
             if hasattr(self.page_instance, 'click_operation_window_confirm_button'):
-                return self.page_instance.click_operation_window_confirm_button()
+                clicked = self.page_instance.click_operation_window_confirm_button()
         elif action == 'cancel':
             if hasattr(self.page_instance, 'click_operation_window_cancel_button'):
-                return self.page_instance.click_operation_window_cancel_button()
+                clicked = self.page_instance.click_operation_window_cancel_button()
         elif action == 'quit':
             if hasattr(self.page_instance, 'click_operation_window_quit_button'):
-                return self.page_instance.click_operation_window_quit_button()
+                clicked = self.page_instance.click_operation_window_quit_button()
+        else:
+            self.log.error(f"未知操作或页面对象不支持该操作: {action}")
+            return False
 
-        self.log.error(f"未知操作或页面对象不支持该操作: {action}")
-        return False
+        # 点击后弹窗立即关闭，切换回主窗口以解除已失效的句柄绑定
+        if clicked:
+            if hasattr(self.page_instance, 'ensure_main_window'):
+                self.page_instance.ensure_main_window()
+
+        return clicked
 
     def handle_prompt_window(self, timeout=5.0):
         """

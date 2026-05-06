@@ -31,7 +31,41 @@ class BasePage:
         self.log = logging.getLogger("log")
         # 实例级别的缓存（用于页面生命周期内）
         self._instance_cache = {}
-    
+
+    def _get_element_property(self, element, prop_name):
+        """
+        获取元素属性值。
+        - Custom 元素：所有属性直接用 get_attribute（get_property 对 Custom 全抛 ArgumentNullException）
+        - 其他元素：ControlType 优先 get_attribute；Name/Value 优先 get_property，回退 get_attribute
+        """
+        # 先检查是否为 Custom（get_attribute 最稳定，get_property 对 Custom 不稳定）
+        ct = None
+        try:
+            ct = element.get_attribute("ControlType")
+        except Exception:
+            pass
+
+        # Custom 元素：跳过 get_property，统一用 get_attribute
+        if ct == "Custom":
+            val = element.get_attribute(prop_name)
+            return val if val is not None else ""
+
+        # 非 Custom：按属性类型选择策略
+        if prop_name == "ControlType":
+            val = element.get_attribute(prop_name)
+            if val is not None and val != "":
+                return val
+            try:
+                return element.get_property(prop_name)
+            except Exception:
+                return ""
+        else:
+            try:
+                return element.get_property(prop_name)
+            except Exception:
+                val = element.get_attribute(prop_name)
+                return val if val is not None else ""
+
     @classmethod
     def enable_cache(cls, enabled: bool = True, timeout: int = 300) -> None:
         """启用/禁用元素缓存"""
@@ -477,8 +511,8 @@ class BasePage:
             try:
                 window_handles = self.driver.window_handles
                 if not window_handles:
-                    self.log.debug("当前没有可用的窗口，1秒后重试...")
-                    _time.sleep(1)
+                    self.log.debug("当前没有可用的窗口，2秒后重试...")
+                    _time.sleep(2)
                     continue
 
                 matched_handle = None
@@ -637,14 +671,53 @@ class BasePage:
                 self.log.info("获取表格非空子元素作为行数据")
                 all_children = table_element.find_elements(By.XPATH, ".//descendant::*")
 
+                # 调试：打印所有子元素结构，便于诊断表格类型
+                self.log.debug(f"表格 '{content_table.get('name')}' 的全部子元素数量: {len(all_children)}")
+                unique_types = {}
+                for child in all_children:
+                    try:
+                        ct = self._get_element_property(child, "ControlType") or ""
+                        if ct == "Custom":
+                            name = self._get_element_property(child, "Name") or ""
+                            text = child.text.strip()
+                        else:
+                            name = self._get_element_property(child, "Name") or ""
+                            text = self._get_element_property(child, "Value") or child.text.strip()
+                        key = f"{ct}|{name[:20]}|{text[:20]}"
+                        unique_types[key] = unique_types.get(key, 0) + 1
+                    except Exception:
+                        pass
+                for k, v in sorted(unique_types.items()):
+                    self.log.debug(f"  [{v}个] {k}")
+
+                # 调试：打印 Custom 元素的 Value 属性采样
+                custom_samples = []
+                for child in all_children[:50]:
+                    try:
+                        ct = self._get_element_property(child, "ControlType")
+                        if ct == "Custom":
+                            name = self._get_element_property(child, "Name") or ""
+                            val = child.text.strip()
+                            custom_samples.append(f"{name[:15]}|text={val[:30]}")
+                    except Exception:
+                        pass
+                if custom_samples:
+                    self.log.debug(f"Custom元素text采样: {custom_samples[:10]}")
+
                 # 过滤非空行元素（保留有实际内容的）
                 rows = []
                 for child in all_children:
                     try:
                         # 提取元素关键信息
-                        name = child.get_attribute("Name") or ""
-                        text = child.text.strip() or ""
-                        control_type = child.get_attribute("ControlType") or ""
+                        control_type = self._get_element_property(child, "ControlType")
+
+                        # Custom 控件：Name 用 get_attribute，文本直接用 .text（get_property 对 Custom 不稳定）
+                        if control_type == "Custom":
+                            name = self._get_element_property(child, "Name") or ""
+                            text = child.text.strip()
+                        else:
+                            name = self._get_element_property(child, "Name") or ""
+                            text = self._get_element_property(child, "Value") or child.text.strip()
 
                         # 保留有意义的元素（排除空值和滚动条等）
                         if (name or text) and "ScrollBar" not in control_type:
@@ -709,9 +782,9 @@ class BasePage:
 
                 # 3. 定位数据起始位置（跳过表头和行标题）
                 data_start_index = 0
-                # 找到第一个数据行（ControlType=Edit且名称包含"行"）
+                # 找到第一个数据行（ControlType为Edit或Custom且名称包含"行"）
                 for i, row in enumerate(rows):
-                    if ("Edit" in row["control_type"] and
+                    if (row["control_type"] in ("Edit", "Custom") and
                             "行" in row["name"] and
                             row["text"] and
                             row["text"].lower() != "(null)"):
@@ -724,7 +797,8 @@ class BasePage:
                 pure_data_rows = rows[data_start_index:]
                 # 过滤掉行标题（如"行 0"、"行 1"）
                 filtered_data = [row for row in pure_data_rows
-                                 if "行" not in row["text"] or "行" in row["name"] and "Edit" in row["control_type"]]
+                                 if "行" not in row["text"]
+                                 or ("行" in row["name"] and row["control_type"] in ("Edit", "Custom"))]
 
                 # 按列数分组（每column_count个单元格组成一行）
                 formatted_data = []
@@ -860,9 +934,13 @@ class BasePage:
                 rows = []
                 for child in all_children:
                     try:
-                        name = child.get_attribute("Name") or ""
-                        text = child.text.strip() or ""
-                        control_type = child.get_attribute("ControlType") or ""
+                        control_type = self._get_element_property(child, "ControlType")
+                        if control_type == "Custom":
+                            name = self._get_element_property(child, "Name") or ""
+                            text = child.text.strip()
+                        else:
+                            name = self._get_element_property(child, "Name") or ""
+                            text = self._get_element_property(child, "Value") or child.text.strip()
 
                         if (name or text) and "ScrollBar" not in control_type:
                             rows.append({
@@ -1071,7 +1149,7 @@ class BasePage:
     def _find_data_start_index(self, rows):
         """找到数据起始位置"""
         for i, row in enumerate(rows):
-            if ("Edit" in row["control_type"] and
+            if (row["control_type"] in ("Edit", "Custom") and
                     "行" in row["name"] and
                     row["text"] and
                     row["text"].lower() != "(null)"):
@@ -1082,7 +1160,8 @@ class BasePage:
         """按行分组数据并保留元素信息"""
         # 过滤数据行
         filtered_data = [row for row in data_rows
-                        if "行" not in row["text"] or ("行" in row["name"] and "Edit" in row["control_type"])]
+                        if "行" not in row["text"]
+                        or ("行" in row["name"] and row["control_type"] in ("Edit", "Custom"))]
 
         result = []
         for i in range(0, len(filtered_data), column_count):

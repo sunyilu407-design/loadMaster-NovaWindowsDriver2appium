@@ -110,6 +110,14 @@ class CustomerManagementPage(BasePage):
             return self.switch_to_window(title=window_config.get('name'))
         return False
 
+    @allure.step("切换到修改客户窗口")
+    def switch_to_alter_customer_window(self):
+        """切换到修改客户窗口（与添加共用同一表单，标题不同）"""
+        window_config = self._get_element_config('alter_customer_window')
+        if window_config:
+            return self.switch_to_window(title=window_config.get('name'))
+        return False
+
     @allure.step("输入客户简称")
     def set_customer_short_name_edit(self, text):
         """输入客户简称"""

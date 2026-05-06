@@ -73,7 +73,7 @@ class TestLoginPage:
         if login_result:
             self.log.info("login_result 为 True，登录成功")
         #新增客户
-        add_customer_scenario=self.customer_management_data.get("add_customer_scenario",{})
+        add_customer_scenario=self.customer_management_data.get("add_customer_success",{})
         add_result = self.customer_handler.add_customer_and_verify(
             short_name=add_customer_scenario.get("short_name", ""),
             full_name=add_customer_scenario.get("full_name", ""),

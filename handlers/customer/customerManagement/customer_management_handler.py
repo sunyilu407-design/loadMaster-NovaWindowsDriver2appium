@@ -71,7 +71,12 @@ class CustomerManagementHandler(BaseHandler, NavigationMixin):
                 if not self.customer_management_page.click_add_customer_button():
                     return {'success': False, 'error': '点击添加客户按钮失败'}
 
-            # 3. 填写客户信息
+            # 3. 切换到添加客户窗口（点击后弹窗是新窗口，必须 reattach）
+            with allure.step("切换到添加客户窗口"):
+                if not self.customer_management_page.switch_to_add_customer_window():
+                    return {'success': False, 'error': '切换到添加客户窗口失败'}
+
+            # 4. 填写客户信息
             with allure.step("填写客户信息"):
                 self.customer_management_page.set_customer_short_name_edit(short_name)
                 self.customer_management_page.set_customer_name_edit(full_name)
@@ -95,7 +100,7 @@ class CustomerManagementHandler(BaseHandler, NavigationMixin):
 
             # 5. 处理操作提示弹窗
             with allure.step(f"处理操作提示弹窗 ({'确认' if confirm else '取消'})"):
-                if not self.handle_operation_prompt(action='confirm' if confirm else 'cancel', timeout=timeout):
+                if not self.handle_operation_prompt(action='cancel' if confirm else 'confirm', timeout=timeout):
                     return {'success': False, 'error': '处理操作提示弹窗失败'}
 
             # 6. 验证结果
@@ -147,7 +152,12 @@ class CustomerManagementHandler(BaseHandler, NavigationMixin):
                 if not self.customer_management_page.click_alter_customer_button():
                     return {'success': False, 'error': '点击修改客户按钮失败'}
 
-            # 4. 填写新客户信息
+            # 4. 切换到修改客户窗口
+            with allure.step("切换到修改客户窗口"):
+                if not self.customer_management_page.switch_to_alter_customer_window():
+                    return {'success': False, 'error': '切换到修改客户窗口失败'}
+
+            # 5. 填写新客户信息
             with allure.step("填写新客户信息"):
                 if new_short_name:
                     self.customer_management_page.set_alter_customer_short_name_edit(new_short_name)

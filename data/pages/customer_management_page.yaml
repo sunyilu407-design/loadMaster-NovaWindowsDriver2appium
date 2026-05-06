@@ -17,7 +17,7 @@ elements:
   delete_customer_button: #删除客户按钮
     automation_id: "btnDeleteBuyer"
   content_table:  # 客户信息管理页面内容表格
-    name: "dataGridView"
+    automation_id: "dataGridView"
   customer_name_search:
     automation_id: "txtBuyerName"
   add_customer_window:

@@ -28,14 +28,14 @@ class TestCustomerManagementPage:
     @allure.title("测试添加客户成功")
     def test_add_customer_success(self):
         """测试添加客户成功场景"""
-        add_customer_scenario = self.customer_management_data.get("add_customer_scenario", {})
+        add_customer_scenario = self.customer_management_data.get("add_customer_success", {})
         add_result = self.customer_handler.add_customer_and_verify(
             short_name=add_customer_scenario.get("short_name", ""),
             full_name=add_customer_scenario.get("full_name", ""),
             code=add_customer_scenario.get("code", ""),
             link_man=add_customer_scenario.get("link_man", ""),
             link_phone=add_customer_scenario.get("link_phone", ""),
-            confirm=add_customer_scenario.get("confirm", ""),
+            confirm=add_customer_scenario.get("confirm", True),
             timeout=10.0
         )
         if add_result["success"]:
@@ -49,14 +49,14 @@ class TestCustomerManagementPage:
     def test_alter_customer_success(self):
         """测试修改客户成功场景"""
         # 先添加
-        add_customer_scenario = self.customer_management_data.get("add_customer_scenario", {})
+        add_customer_scenario = self.customer_management_data.get("add_customer_success", {})
         self.customer_handler.add_customer_and_verify(
             short_name=add_customer_scenario.get("short_name", ""),
             full_name=add_customer_scenario.get("full_name", ""),
             code=add_customer_scenario.get("code", ""),
             link_man=add_customer_scenario.get("link_man", ""),
             link_phone=add_customer_scenario.get("link_phone", ""),
-            confirm=add_customer_scenario.get("confirm", ""),
+            confirm=add_customer_scenario.get("confirm", True),
             timeout=10.0
         )
         # 再修改
@@ -79,14 +79,14 @@ class TestCustomerManagementPage:
     def test_delete_customer_success(self):
         """测试删除客户成功场景"""
         # 先添加
-        add_customer_scenario = self.customer_management_data.get("add_customer_scenario", {})
+        add_customer_scenario = self.customer_management_data.get("add_customer_success", {})
         self.customer_handler.add_customer_and_verify(
             short_name=add_customer_scenario.get("short_name", ""),
             full_name=add_customer_scenario.get("full_name", ""),
             code=add_customer_scenario.get("code", ""),
             link_man=add_customer_scenario.get("link_man", ""),
             link_phone=add_customer_scenario.get("link_phone", ""),
-            confirm=add_customer_scenario.get("confirm", ""),
+            confirm=add_customer_scenario.get("confirm", True),
             timeout=10.0
         )
         # 再删除
