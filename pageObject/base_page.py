@@ -37,6 +37,7 @@ class BasePage:
         获取元素属性值。
         - Custom 元素：所有属性直接用 get_attribute（get_property 对 Custom 全抛 ArgumentNullException）
         - 其他元素：ControlType 优先 get_attribute；Name/Value 优先 get_property，回退 get_attribute
+        - 增加对 NovaWindows Driver 的异常容忍，返回空字符串而非抛出
         """
         # 先检查是否为 Custom（get_attribute 最稳定，get_property 对 Custom 不稳定）
         ct = None
@@ -47,14 +48,20 @@ class BasePage:
 
         # Custom 元素：跳过 get_property，统一用 get_attribute
         if ct == "Custom":
-            val = element.get_attribute(prop_name)
-            return val if val is not None else ""
+            try:
+                val = element.get_attribute(prop_name)
+                return val if val is not None else ""
+            except Exception:
+                return ""
 
         # 非 Custom：按属性类型选择策略
         if prop_name == "ControlType":
-            val = element.get_attribute(prop_name)
-            if val is not None and val != "":
-                return val
+            try:
+                val = element.get_attribute(prop_name)
+                if val is not None and val != "":
+                    return val
+            except Exception:
+                pass
             try:
                 return element.get_property(prop_name)
             except Exception:
@@ -63,8 +70,12 @@ class BasePage:
             try:
                 return element.get_property(prop_name)
             except Exception:
+                pass
+            try:
                 val = element.get_attribute(prop_name)
                 return val if val is not None else ""
+            except Exception:
+                return ""
 
     @classmethod
     def enable_cache(cls, enabled: bool = True, timeout: int = 300) -> None:
@@ -509,6 +520,7 @@ class BasePage:
         while _time.time() - start < timeout:
             attempt += 1
             try:
+                self.log.debug(f"第{attempt}次循环，检查窗口...")
                 window_handles = self.driver.window_handles
                 if not window_handles:
                     self.log.debug("当前没有可用的窗口，2秒后重试...")
@@ -520,26 +532,29 @@ class BasePage:
 
                 for handle in window_handles:
                     try:
+                        self.log.debug(f"  尝试窗口: {handle}")
                         self.driver.switch_to.window(handle)
                         current_title = self.driver.title or ''
                         seen_titles.append(f"{handle}='{current_title}'")
 
                         if title and title in current_title:
                             matched_handle = handle
-                            self.log.info(f"找到目标窗口: handle={handle}, title='{current_title}'")
+                            self.log.info(f"通过标题找到目标窗口: handle={handle}, title='{current_title}'")
                             break
 
                         if automation_id:
                             try:
+                                self.log.debug(f"  通过automation_id查找: {automation_id}")
                                 root_element = self.locate_element(timeout=1, automation_id=automation_id, type="Window")
                                 if root_element:
                                     matched_handle = handle
-                                    self.log.info(f"找到目标窗口: handle={handle}, automation_id='{automation_id}'")
+                                    self.log.info(f"通过automation_id找到目标窗口: handle={handle}")
                                     break
-                            except Exception:
+                            except Exception as e:
+                                self.log.debug(f"  automation_id定位失败: {e}")
                                 pass
                     except Exception as e:
-                        self.log.debug(f"跳过已关闭的窗口 {handle}: {e}")
+                        self.log.debug(f"  窗口 {handle} 切换失败: {e}")
                         continue
 
                 if matched_handle:
@@ -562,6 +577,7 @@ class BasePage:
 
                 remaining = timeout - (_time.time() - start)
                 if remaining > 1:
+                    self.log.debug(f"等待1秒后重试，剩余时间: {remaining:.1f}秒")
                     _time.sleep(1)
                 else:
                     break
@@ -709,15 +725,37 @@ class BasePage:
                 for child in all_children:
                     try:
                         # 提取元素关键信息
-                        control_type = self._get_element_property(child, "ControlType")
+                        # NovaWindows Driver 下，get_attribute 和 get_property 都可能抛异常
+                        # 需要双重保护：先尝试获取属性，失败则用默认值，最后确保 .text 仍可用
+                        try:
+                            control_type = self._get_element_property(child, "ControlType") or "Custom"
+                        except Exception:
+                            control_type = "Custom"
 
-                        # Custom 控件：Name 用 get_attribute，文本直接用 .text（get_property 对 Custom 不稳定）
-                        if control_type == "Custom":
+                        try:
                             name = self._get_element_property(child, "Name") or ""
-                            text = child.text.strip()
+                        except Exception:
+                            name = ""
+
+                        # 文本内容：Edit 控件用 Value 属性，Custom 用 .text
+                        if control_type == "Edit":
+                            # Edit 控件的数据在 Value 属性中，Name 是标题如"备注 行 0, 未排序。"
+                            try:
+                                text = self._get_element_property(child, "Value") or ""
+                            except Exception:
+                                text = ""
+                            # 如果 Value 为空，尝试 .text
+                            if not text:
+                                try:
+                                    text = child.text.strip() if child.text else ""
+                                except Exception:
+                                    text = ""
                         else:
-                            name = self._get_element_property(child, "Name") or ""
-                            text = self._get_element_property(child, "Value") or child.text.strip()
+                            # 其他控件（包括 Custom）用 .text
+                            try:
+                                text = child.text.strip() if child.text else ""
+                            except Exception:
+                                text = ""
 
                         # 保留有意义的元素（排除空值和滚动条等）
                         if (name or text) and "ScrollBar" not in control_type:
@@ -728,7 +766,19 @@ class BasePage:
                                 "control_type": control_type
                             })
                     except Exception as e:
-                        self.log.debug(f"过滤元素时出错: {e}")
+                        # 最后一个保底：确保 .text 能获取到内容
+                        try:
+                            raw_text = child.text
+                            text = raw_text.strip() if raw_text else ""
+                            if text:
+                                rows.append({
+                                    "element": child,
+                                    "name": "",
+                                    "text": text,
+                                    "control_type": "Custom"
+                                })
+                        except Exception as inner_e:
+                            self.log.debug(f"元素 text 获取也失败: {inner_e}, element.tag={child.tag_name if hasattr(child, 'tag_name') else 'unknown'}")
                         continue
 
                 self.log.info(f"找到{len(rows)}个有效行元素")
@@ -782,29 +832,54 @@ class BasePage:
 
                 # 3. 定位数据起始位置（跳过表头和行标题）
                 data_start_index = 0
+                self.log.info(f"开始查找数据起始位置，rows总数: {len(rows)}")
                 # 找到第一个数据行（ControlType为Edit或Custom且名称包含"行"）
                 for i, row in enumerate(rows):
+                    self.log.debug(f"  索引{i}: name='{row['name'][:30] if row['name'] else '(empty)'}', text='{row['text'][:30] if row['text'] else '(empty)'}', control_type={row['control_type']}")
                     if (row["control_type"] in ("Edit", "Custom") and
-                            "行" in row["name"] and
+                            "行" in (row["name"] or "") and
                             row["text"] and
                             row["text"].lower() != "(null)"):
                         data_start_index = i
+                        self.log.info(f"  找到数据起始索引: {i}, name='{row['name']}', text='{row['text'][:50]}'")
                         break
 
-                self.log.debug(f"数据起始索引: {data_start_index}")
+                if data_start_index == 0 and len(rows) > 0:
+                    # 如果没找到"行"关键字，输出前几个元素的详情帮助诊断
+                    self.log.warning(f"未找到'行'关键字作为数据起始标记，前10个元素详情:")
+                    for i, row in enumerate(rows[:10]):
+                        self.log.warning(f"  [{i}] name='{row['name'][:40] if row['name'] else ''}', text='{row['text'][:40] if row['text'] else ''}', ct={row['control_type']}")
+
+                self.log.debug(f"数据起始索引: {data_start_index}, 剩余行数: {len(rows) - data_start_index}")
 
                 # 4. 按列数分组数据（核心优化）
                 pure_data_rows = rows[data_start_index:]
-                # 过滤掉行标题（如"行 0"、"行 1"）
+                self.log.debug(f"过滤前数据行数: {len(pure_data_rows)}")
+
+                # 调试：打印过滤前的数据行（text内容）
+                self.log.debug(f"过滤前前20行数据:")
+                for idx, row in enumerate(pure_data_rows[:20]):
+                    self.log.debug(f"  [{idx}] name='{row['name'][:30]}', text='{row['text'][:30]}', ct={row['control_type']}")
+
+                # 过滤掉 Custom 类型的行选择器（如"行 0"、"行 1"）
+                # 这些是 NovaWindows DataGridView 的行选择器控件
+                # 注意：Edit 单元格也包含"行"（如"客户简称 行 0, 未排序。"），
+                # 但它们包含实际数据，不应该被过滤
                 filtered_data = [row for row in pure_data_rows
-                                 if "行" not in row["text"]
-                                 or ("行" in row["name"] and row["control_type"] in ("Edit", "Custom"))]
+                                 if not (row["control_type"] == "Custom" and "行" in row["name"])]
+
+                # 调试：打印过滤后的数据行
+                self.log.debug(f"过滤后数据行数: {len(filtered_data)}, 列数: {column_count}")
+                self.log.debug(f"过滤后前20行数据:")
+                for idx, row in enumerate(filtered_data[:20]):
+                    self.log.debug(f"  [{idx}] name='{row['name'][:30]}', text='{row['text'][:30]}', ct={row['control_type']}")
 
                 # 按列数分组（每column_count个单元格组成一行）
                 formatted_data = []
                 for i in range(0, len(filtered_data), column_count):
                     row_cells = filtered_data[i:i + column_count]
                     if len(row_cells) < column_count:
+                        self.log.debug(f"跳过不完整行: 索引{i}, 只有{len(row_cells)}个单元格，需要{column_count}个")
                         continue  # 跳过不完整的行
 
                     row_dict = {}
@@ -819,8 +894,12 @@ class BasePage:
                     # 只保留有数据的行
                     if any(row_dict.values()):
                         formatted_data.append(row_dict)
+                    else:
+                        self.log.debug(f"跳过空数据行: {row_dict}")
 
-                table_data = formatted_data
+                self.log.info(f"分组完成，最终数据行数: {len(formatted_data)}")
+                table_data = formatted_data  # Windows平台需要赋值
+                self.log.debug(f"最终数据内容: {table_data}")
 
             else:
                 # Web平台处理逻辑
@@ -836,6 +915,8 @@ class BasePage:
                     if any(row_dict.values()):
                         table_data.append(row_dict)
 
+            # 调试：打印最终结果
+            self.log.debug(f"返回前检查: table_data={table_data}")
             self.log.info(f"成功获取表格数据，共{len(table_data)}行有效数据")
             return table_data
 
@@ -2049,11 +2130,17 @@ class BasePage:
     
     def wait_for_operation_window(self, timeout=5.0, poll_interval=0.5):
         """轮询等待操作提示窗口出现并切换到该窗口"""
-        end_time = time.time() + timeout
-        while time.time() < end_time:
+        import time as _time
+        self.log.info(f"开始等待操作提示窗口，超时: {timeout}秒")
+        end_time = _time.time() + timeout
+        while _time.time() < end_time:
+            self.log.debug("调用 switch_to_operation_window...")
             if self.switch_to_operation_window():
+                self.log.info("操作提示窗口已出现并切换成功")
                 return True
-            time.sleep(poll_interval)
+            elapsed = _time.time() - (end_time - timeout)
+            self.log.debug(f"窗口未出现，等待{poll_interval}秒... (已等待{elapsed:.1f}秒)")
+            _time.sleep(poll_interval)
         self.log.error("等待操作提示窗口超时")
         return False
     
